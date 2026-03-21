@@ -1,0 +1,7 @@
+﻿src/presentation/controllers/Auth/auth.controller.ts(2,33): error TS1261: Already included file name 'C:/Users/anand/OneDrive/Desktop/connect-copy/CONNECT/Backend/src/infrastructure/di/LoggerContainer.ts' differs from file name 'C:/Users/anand/OneDrive/Desktop/connect-copy/CONNECT/Backend/src/infrastructure/DI/LoggerContainer.ts' only in casing.
+  The file is in the program because:
+    Imported via "../../../infrastructure/di/LoggerContainer" from file 'C:/Users/anand/OneDrive/Desktop/connect-copy/CONNECT/Backend/src/presentation/controllers/Auth/auth.controller.ts'
+    Imported via "./infrastructure/di/LoggerContainer" from file 'C:/Users/anand/OneDrive/Desktop/connect-copy/CONNECT/Backend/src/app.ts'
+    Imported via '../../infrastructure/di/LoggerContainer' from file 'C:/Users/anand/OneDrive/Desktop/connect-copy/CONNECT/Backend/src/presentation/middleware/LoggerMiddleware.ts'
+    Imported via "./infrastructure/di/LoggerContainer" from file 'C:/Users/anand/OneDrive/Desktop/connect-copy/CONNECT/Backend/src/index.ts'
+    Matched by include pattern 'src' in 'C:/Users/anand/OneDrive/Desktop/connect-copy/CONNECT/Backend/tsconfig.json'
