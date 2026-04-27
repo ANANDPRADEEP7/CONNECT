@@ -7,9 +7,12 @@ import { signupSchema, type SignupFormData } from "../../../validator/user/signu
 import { useNavigate, Link } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useState } from "react";
+import { useAppDispatch } from "../../../store/hooks";
+import { setUser } from "../../../store/slices/authSlice";
 
 const SignupForm = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const {
@@ -35,6 +38,7 @@ const SignupForm = () => {
       setGoogleLoading(true);
       try {
         const result = await userApi.googleLogin(tokenResponse.access_token);
+        dispatch(setUser(result.user));
         localStorage.setItem("token", result.token);
         toast.success(result.message || "Signed up with Google successfully!");
         navigate("/home");

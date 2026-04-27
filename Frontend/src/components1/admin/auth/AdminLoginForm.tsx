@@ -5,11 +5,12 @@ import { loginSchema, type LoginFormData } from "../../../validator/user/login.v
 import { toast } from "react-toastify";
 import { adminApi } from "../../../Endpoints/Api/Admin/adminApi";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../context/AuthContext";
+import { useAppDispatch } from "../../../store/hooks";
+import { setAdmin } from "../../../store/slices/authSlice";
 
 const AdminLoginForm = () => {
   const navigate = useNavigate();
-  const { adminLogin } = useAuth();
+  const dispatch = useAppDispatch();
 
   const {
     register,
@@ -22,7 +23,7 @@ const AdminLoginForm = () => {
   const onSubmit = async (data: LoginFormData) => {
     try {
       const response = await adminApi.Login(data);
-      adminLogin(response.admin);
+      dispatch(setAdmin(response.admin));
       localStorage.setItem("adminToken", response.token);
       toast.success(response.message || "Admin logged in successfully!");
       navigate("/admin/dashboard");

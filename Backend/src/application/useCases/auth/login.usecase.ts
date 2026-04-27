@@ -27,11 +27,11 @@ export class LoginUseCase {
         }
 
         // 4. Sign JWT using service
-        const token = this.tokenService.generateAuthToken({ 
-            id: user._id, 
-            email: user.email, 
-            role: user.role, 
-            name: user.name 
+        const token = this.tokenService.generateAuthToken({
+            id: user._id,
+            email: user.email,
+            role: user.role,
+            name: user.name
         });
 
         return {
@@ -42,7 +42,10 @@ export class LoginUseCase {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                isRiderActive: user.isRiderActive,
+                isBlocked: user.isBlocked,
             },
         };
     }
 }
+

@@ -13,7 +13,7 @@ const OtpForm = ({ otpLength = 5 }: OtpFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // ✅ Timer state added
-  const [timer, setTimer] = useState(10);
+  const [timer, setTimer] = useState(120);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();

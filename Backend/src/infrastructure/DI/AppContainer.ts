@@ -15,6 +15,7 @@
 
 // ── Infrastructure services ──────────────────────────────────────────────────
 import { UserRepository }        from "../repository/Users/UserRepository";
+import { RideRepository }        from "../repository/Rides/RideRepository";
 import { JwtTokenService }       from "../services/JwtTokenService";
 import { InMemoryCacheService }  from "../services/InMemoryCacheService";
 import { GoogleAuthService }     from "../services/GoogleAuthService";
@@ -47,10 +48,16 @@ import { GetAllRidersUseCase }    from "../../application/useCases/admin/getAllR
 import { ToggleBlockUserUseCase } from "../../application/useCases/admin/toggleBlockUser.usecase";
 import { UpdateRiderStatusUseCase } from "../../application/useCases/admin/updateRiderStatus.usecase";
 
+// ── Application use cases – Ride ─────────────────────────────────────────────
+import { CreateRideUseCase }      from "../../application/useCases/ride/createRide.usecase";
+import { GetRidesUseCase }        from "../../application/useCases/ride/getRides.usecase";
+import { GetMyRidesUseCase }      from "../../application/useCases/ride/getMyRides.usecase";
+
 // ── Presentation controllers ──────────────────────────────────────────────────
 import { UserController }         from "../../presentation/controllers/Auth/auth.controller";
 import { UserProfileController }  from "../../presentation/controllers/User/UserProfileController";
 import { AdminController }        from "../../presentation/controllers/Admin/admin.controller";
+import { RideController }         from "../../presentation/controllers/Ride/ride.controller";
 
 export class AppContainer {
   private static _instance: AppContainer;
@@ -59,6 +66,7 @@ export class AppContainer {
 
   // Infrastructure
   readonly userRepository     = new UserRepository();
+  readonly rideRepository     = new RideRepository();
   readonly tokenService       = new JwtTokenService();
   readonly cacheService       = new InMemoryCacheService();
   readonly googleAuthService  = new GoogleAuthService();
@@ -90,6 +98,11 @@ export class AppContainer {
   readonly toggleBlockUserUseCase = new ToggleBlockUserUseCase(this.userRepository);
   readonly updateRiderStatusUseCase = new UpdateRiderStatusUseCase(this.userRepository);
 
+  // ── Ride use cases ──────────────────────────────────────────────────────────
+  readonly createRideUseCase  = new CreateRideUseCase(this.rideRepository);
+  readonly getRidesUseCase    = new GetRidesUseCase(this.rideRepository);
+  readonly getMyRidesUseCase  = new GetMyRidesUseCase(this.rideRepository);
+
   // ── Controllers ─────────────────────────────────────────────────────────────
   readonly authController = new UserController(
     this.signupUsecase,
@@ -99,6 +112,7 @@ export class AppContainer {
     this.verifyEmailUsecase,
     this.resetPasswordUsecase,
     this.googleLoginUsecase,
+    this.getUserDetailsUseCase,
   );
 
   readonly userProfileController = new UserProfileController(
@@ -112,6 +126,13 @@ export class AppContainer {
     this.toggleBlockUserUseCase,
     this.getAllRidersUseCase,
     this.updateRiderStatusUseCase,
+    this.getUserDetailsUseCase,
+  );
+
+  readonly rideController = new RideController(
+    this.createRideUseCase,
+    this.getRidesUseCase,
+    this.getMyRidesUseCase,
   );
 
   // ── Singleton accessor ──────────────────────────────────────────────────────

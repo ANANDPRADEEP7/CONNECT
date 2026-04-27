@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./presentation/routes/Auth/auth.routes";
 import userRoutes from "./presentation/routes/User/user.routes";
 import adminRoutes from "./presentation/routes/Admin/admin.routes";
+import rideRoutes from "./presentation/routes/Ride/ride.routes";
 import { LoggerContainer } from "./infrastructure/DI/LoggerContainer";
 import { errorLogger, requestLogger } from "./presentation/middleware/LoggerMiddleware";
 
@@ -39,6 +40,7 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/user/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/admin", adminRoutes);
+app.use("/ride", rideRoutes);
 
 // Error handling middleware
 app.use(errorLogger);

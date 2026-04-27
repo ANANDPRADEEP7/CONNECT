@@ -7,6 +7,7 @@ import { LoginUseCase } from "../../../application/useCases/auth/login.usecase";
 import { VerifyEmailUsecase } from "../../../application/useCases/auth/verifyEmail.usecase";
 import { ResetPasswordUsecase } from "../../../application/useCases/auth/resetPassword.usecase";
 import { GoogleLoginUsecase } from "../../../application/useCases/auth/googleLogin.usecase";
+import { GetUserDetailsUseCase } from "../../../application/useCases/user/getUserDetails.usecase";
 
 
 
@@ -23,7 +24,8 @@ export class UserController {
     private readonly loginUseCase: LoginUseCase,
     private readonly verifyEmailUsecase: VerifyEmailUsecase,
     private readonly resetPasswordUsecase: ResetPasswordUsecase,
-    private readonly googleLoginUsecase: GoogleLoginUsecase
+    private readonly googleLoginUsecase: GoogleLoginUsecase,
+    private readonly getUserDetailsUseCase: GetUserDetailsUseCase
   ) { }
 
 
@@ -129,6 +131,21 @@ export class UserController {
       });
 
       return res.status(200).json(result);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  };
+
+  me = async (req: Request, res: Response) => {
+    try {
+      const decodedUser = (req as any).user;
+      console.log("decodedUser", decodedUser)
+      if (!decodedUser || !decodedUser.id) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = await this.getUserDetailsUseCase.execute(decodedUser.id);
+      return res.status(200).json({ user });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }

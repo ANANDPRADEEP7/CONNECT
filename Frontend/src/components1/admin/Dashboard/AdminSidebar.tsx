@@ -1,6 +1,8 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../../context/AuthContext";
 import { toast } from "react-toastify";
+import { useAppDispatch } from "../../../store/hooks";
+import { clearAdmin } from "../../../store/slices/authSlice";
+import { adminApi } from "../../../Endpoints/Api/Admin/adminApi";
 import {
   LayoutDashboard,
   Users,
@@ -25,11 +27,16 @@ const navItems = [
 ];
 
 const AdminSidebar = () => {
-  const { adminLogout } = useAuth();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    adminLogout();
+  const handleLogout = async () => {
+    try {
+      await adminApi.Logout();
+    } catch (error) {
+      console.error("Admin logout failed on server:", error);
+    }
+    dispatch(clearAdmin());
     toast.success("Admin logged out successfully");
     navigate("/Admin/login");
   };

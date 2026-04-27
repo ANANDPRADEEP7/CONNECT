@@ -26,4 +26,8 @@ export const adminApi = {
     const response = await api.patch(`/admin/riders/${id}/status`, { status });
     return response.data;
   },
+  getMe: async () => {
+    const response = await api.get("/admin/me");
+    return response.data;
+  },
 };

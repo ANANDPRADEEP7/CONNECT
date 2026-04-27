@@ -16,6 +16,7 @@ router.post("/logout", adminController.logout);
 
 // Protected admin routes
 router.use(authenticateAdmin(tokenService));
+router.get(   "/me",                 adminController.me);
 router.get(   "/users",              adminController.getAllUsers);
 router.get(   "/riders",             adminController.getAllRiders);
 router.patch( "/users/:id/block",    adminController.toggleBlockUser);

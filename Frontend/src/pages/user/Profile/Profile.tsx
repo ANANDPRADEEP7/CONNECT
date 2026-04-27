@@ -4,6 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { useAppSelector } from "../../../store/hooks";
 import ProfileHeader from "../../../components1/user/Profile/ProfileHeader";
 import ProfileInfo from "../../../components1/user/Profile/ProfileInfo";
 import { Button } from "../../../components/ui/button";
@@ -25,22 +26,7 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
-// ─── JWT Helper ───────────────────────────────────────────────────────────────
-const decodeJwt = (token: string) => {
-  try {
-    const base64Url = token.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join("")
-    );
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    return null;
-  }
-};
+
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const Profile = () => {
@@ -57,33 +43,32 @@ const Profile = () => {
     verified: true,
   });
 
+  const user = useAppSelector((state) => state.auth.user);
+  
   useEffect(() => {
-    // 1. Get the token from localStorage
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!user) {
       toast.error("Please login to view your profile");
-      navigate("/"); // Redirect to login if needed
+      navigate("/"); // Redirect to login if not available
       return;
     }
 
-    // 2. Decode the token payload
-    const decoded = decodeJwt(token);
-    if (decoded) {
-      const fullName = decoded.name || decoded.email?.split("@")[0] || "User";
-      const nameParts = fullName.split(" ");
+    const nameParts = user.name.split(" ");
+    setCurrentUser({
+      _id: user.id,
+      name: user.name,
+      email: user.email,
+      firstName: nameParts[0] || "",
+      lastName: nameParts.slice(1).join(" ") || "",
+      dob: "Not Provided",
+      avatarUrl: "",
+      verified: true,
+    });
 
-      setCurrentUser({
-        _id: decoded.id || decoded._id,
-        name: fullName,
-        email: decoded.email || "",
-        firstName: nameParts[0] || "",
-        lastName: nameParts.slice(1).join(" ") || "",
-        dob: "Not Provided",
-        avatarUrl: "",
-        verified: true,
-      });
+    if (user.isRiderActive === "declined") {
+      toast.error("Your rider verification was rejected by admin.");
     }
-  }, [navigate]);
+
+  }, [user, navigate]);
 
   const {
     register,
@@ -152,8 +137,30 @@ const Profile = () => {
         />
 
         {/* Show button to expand verification form, or show the form itself */}
-        {!showVerification ? (
-          <div className="flex justify-center">
+        {user?.isRiderActive === "declined" ? (
+          <div className="flex justify-center flex-col items-center gap-3 bg-red-500/10 p-4 border border-red-500/20 rounded-md">
+            <span className="text-red-500 font-semibold tracking-wider uppercase text-sm">
+              Verification Rejected
+            </span>
+            <span className="text-xs text-muted-foreground text-center">
+              Your previous profile application has been rejected by the admin. Please resubmit your accurate details.
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              className="tracking-widest uppercase text-xs border-red-500/50 hover:bg-red-500/20 text-red-500"
+              onClick={() => setShowVerification(true)}
+            >
+              Re-submit Verification Details
+            </Button>
+          </div>
+        ) : !showVerification ? (
+          <div className="flex justify-center flex-col items-center gap-3">
+             {user?.isRiderActive === "pending" && (
+                <span className="text-yellow-500 font-semibold tracking-wider uppercase text-xs mb-2">
+                  Status: Pending Admin Approval
+                </span>
+             )}
             <Button
               type="button"
               variant="outline"

@@ -1,16 +1,24 @@
 import { useState } from "react";
 import { Search, ChevronDown, User, Menu, X, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../../context/AuthContext";
 import { toast } from "react-toastify";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
+import { clearUser } from "../../../store/slices/authSlice";
+import { userApi } from "../../../Endpoints/Api/user/userApi";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    try {
+      await userApi.Logout();
+    } catch (error) {
+      console.error("Logout failed on server:", error);
+    }
+    dispatch(clearUser());
     toast.success("Logged out successfully");
     navigate("/user/login");
   };
@@ -33,12 +41,19 @@ const Navbar = () => {
           <button className="flex items-center gap-1.5 px-4 py-2.5 text-sm tracking-widest uppercase text-foreground hover:text-muted-foreground transition-colors">
             About Us <ChevronDown size={14} />
           </button>
-          {userRole === "rider" ? (
+          {userRole === "rider" || user?.isRiderActive === "active" ? (
             <Link
               to="/post-ride"
               className="px-6 py-2.5 rounded-full bg-blue-600 text-white text-sm tracking-widest uppercase font-semibold hover:bg-blue-700 transition-colors"
             >
               Post a Ride
+            </Link>
+          ) : user?.isRiderActive === "pending" ? (
+            <Link
+              to="/Profile"
+              className="px-6 py-2.5 rounded-full bg-yellow-500/20 text-yellow-600 text-sm tracking-widest uppercase font-semibold hover:bg-yellow-500/30 transition-colors"
+            >
+              Pending Approval
             </Link>
           ) : (
             <Link
@@ -87,7 +102,7 @@ const Navbar = () => {
             <>
               <Link to="/home" className="block text-sm tracking-widest uppercase text-foreground">Home</Link>
               <Link to="/Profile" className="block text-sm tracking-widest uppercase text-foreground">Profile</Link>
-              <button 
+              <button
                 onClick={handleLogout}
                 className="block text-sm tracking-widest uppercase text-red-500 text-left w-full"
               >
@@ -96,8 +111,10 @@ const Navbar = () => {
             </>
           )}
           <a href="#" className="block text-sm tracking-widest uppercase text-foreground">About Us</a>
-          {userRole === "rider" ? (
+          {userRole === "rider" || user?.isRiderActive === "active" ? (
             <Link to="/post-ride" className="block text-sm tracking-widest uppercase text-foreground">Post a Ride</Link>
+          ) : user?.isRiderActive === "pending" ? (
+            <Link to="/Profile" className="block text-sm tracking-widest uppercase text-yellow-600">Pending Approval</Link>
           ) : user && (
             <Link to="/Profile" className="block text-sm tracking-widest uppercase text-foreground">Become a Rider</Link>
           )}

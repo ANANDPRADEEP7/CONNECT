@@ -61,4 +61,9 @@ export const userApi = {
     const response = await api.get(`/user/${userId}`);
     return response.data;
   },
+
+  getMe: async () => {
+    const response = await api.get("/user/auth/me");
+    return response.data;
+  },
 };
