@@ -1,6 +1,7 @@
 import { IUserRepository } from "../../interfaces/repositories/User/IUserRepository";
 import { ITokenService } from "../../../domain/interfaces/ITokenService";
 import bcrypt from "bcrypt";
+import { ResponseMessage } from "../../../domain/enums/ResponseMessage.enum";
 
 export class LoginUseCase {
     constructor(
@@ -12,18 +13,18 @@ export class LoginUseCase {
         // 1. Find user in MongoDB
         const user = await this.userRepository.findByEmailFromDB(email);
         if (!user) {
-            throw new Error("User not found. Please sign up first.");
+            throw new Error(ResponseMessage.USER_NOT_FOUND);
         }
 
         // 2. Check if blocked
         if (user.isBlocked) {
-            throw new Error("Your account has been blocked. Contact support.");
+            throw new Error(ResponseMessage.USER_BLOCKED);
         }
 
         // 3. Compare password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            throw new Error("Incorrect password. Please try again.");
+            throw new Error(ResponseMessage.INCORRECT_PASSWORD);
         }
 
         // 4. Sign JWT using service
@@ -35,7 +36,7 @@ export class LoginUseCase {
         });
 
         return {
-            message: "Login successful",
+            message: ResponseMessage.LOGIN_SUCCESS,
             token,
             user: {
                 id: user._id,
@@ -44,6 +45,12 @@ export class LoginUseCase {
                 role: user.role,
                 isRiderActive: user.isRiderActive,
                 isBlocked: user.isBlocked,
+                phonenumber: user.phonenumber,
+                bio: user.bio,
+                govId: user.govId,
+                vehicleImage: user.vehicleImage,
+                pucImage: user.pucImage,
+                rcImage: user.rcImage
             },
         };
     }

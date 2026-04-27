@@ -8,6 +8,7 @@ import adminRoutes from "./presentation/routes/Admin/admin.routes";
 import rideRoutes from "./presentation/routes/Ride/ride.routes";
 import { LoggerContainer } from "./infrastructure/DI/LoggerContainer";
 import { errorLogger, requestLogger } from "./presentation/middleware/LoggerMiddleware";
+import { errorHandler } from "./presentation/middleware/ErrorHandler";
 
 const app = express();
 app.use(cookieParser());
@@ -44,14 +45,7 @@ app.use("/ride", rideRoutes);
 
 // Error handling middleware
 app.use(errorLogger);
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  res.status(err.status || 500).json({
-    error: {
-      message: err.message || "Internal Server Error",
-      ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
-    },
-  });
-});
+app.use(errorHandler);
 
 // 404 handler
 app.use((req, res) => {

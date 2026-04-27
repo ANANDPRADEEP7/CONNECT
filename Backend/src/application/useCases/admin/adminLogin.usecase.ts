@@ -1,6 +1,7 @@
 import { IUserRepository } from "../../interfaces/repositories/User/IUserRepository";
 import { ITokenService } from "../../../domain/interfaces/ITokenService";
 import bcrypt from "bcrypt";
+import { ResponseMessage } from "../../../domain/enums/ResponseMessage.enum";
 
 export class AdminLoginUseCase {
     constructor(
@@ -12,18 +13,18 @@ export class AdminLoginUseCase {
         // 1. Find user in MongoDB
         const user = await this.userRepository.findByEmailFromDB(email);
         if (!user) {
-            throw new Error("Admin not found.");
+            throw new Error(ResponseMessage.USER_NOT_FOUND);
         }
 
         // 2. Check if admin
         if (user.role !== "admin") {
-            throw new Error("Access denied. You are not an admin.");
+            throw new Error(ResponseMessage.NOT_AUTHORIZED);
         }
 
         // 3. Compare password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            throw new Error("Incorrect password. Please try again.");
+            throw new Error(ResponseMessage.INCORRECT_PASSWORD);
         }
 
         // 4. Sign JWT using service
@@ -35,7 +36,7 @@ export class AdminLoginUseCase {
         });
 
         return {
-            message: "Admin login successful",
+            message: ResponseMessage.ADMIN_LOGIN_SUCCESS,
             token,
             admin: {
                 id: user._id,

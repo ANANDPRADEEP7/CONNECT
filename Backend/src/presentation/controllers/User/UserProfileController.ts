@@ -1,6 +1,9 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+import { AuthRequest } from "../../middleware/AuthMiddleware";
 import { UpdateProfileUseCase } from "../../../application/useCases/user/updateProfile.usecase";
 import { GetUserDetailsUseCase } from "../../../application/useCases/user/getUserDetails.usecase";
+import { HttpStatus } from "../../../domain/enums/HttpStatus.enum";
+import { ResponseMessage } from "../../../domain/enums/ResponseMessage.enum";
 
 export class UserProfileController {
     constructor(
@@ -8,23 +11,23 @@ export class UserProfileController {
         private readonly getUserDetailsUseCase: GetUserDetailsUseCase
     ) { }
 
-    getUserDetails = async (req: Request, res: Response) => {
+    getUserDetails = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { userId } = req.params;
             const user = await this.getUserDetailsUseCase.execute(userId as string);
-            return res.status(200).json(user);
-        } catch (error: any) {
-            return res.status(404).json({ message: error.message });
+            return res.status(HttpStatus.OK).json(user);
+        } catch (error) {
+            next(error);
         }
     };
 
-    updateProfile = async (req: Request, res: Response) => {
+    updateProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
             const { userId, bio } = req.body;
 
             // Validate userId is present before doing anything
             if (!userId) {
-                return res.status(400).json({ message: "User ID is required" });
+                return res.status(HttpStatus.BAD_REQUEST).json({ message: "User ID is required" });
             }
 
             // Multer attaches uploaded files to req.files
@@ -34,7 +37,13 @@ export class UserProfileController {
             // This path is what gets stored in MongoDB
             const buildPath = (file: Express.Multer.File): string => `/uploads/${file.filename}`;
 
-            const profileData: Record<string, any> = { bio };
+            const profileData: Partial<{
+                bio: string;
+                govId: string;
+                vehicleImage: string;
+                pucImage: string;
+                rcImage: string;
+            }> = { bio };
 
             if (files?.govId?.[0]) profileData.govId = buildPath(files.govId[0]);
             if (files?.vehicleImage?.[0]) profileData.vehicleImage = buildPath(files.vehicleImage[0]);
@@ -44,11 +53,11 @@ export class UserProfileController {
             // Use case: updates user in DB and sets isRiderActive = "pending"
             await this.updateProfileUseCase.execute(userId, profileData);
 
-            return res.status(200).json({
-                message: "Profile updated successfully. Status set to pending review.",
+            return res.status(HttpStatus.OK).json({
+                message: ResponseMessage.PROFILE_PENDING_REVIEW,
             });
-        } catch (error: any) {
-            return res.status(500).json({ message: error.message });
+        } catch (error) {
+            next(error);
         }
     };
 }

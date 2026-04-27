@@ -11,15 +11,15 @@ const router  = Router();
 const { adminController, tokenService } = AppContainer.getInstance();
 
 // Public admin routes
-router.post("/login",  adminController.login);
-router.post("/logout", adminController.logout);
+router.post("/login",  (req, res, next) => adminController.login(req, res, next));
+router.post("/logout", (req, res, next) => adminController.logout(req, res, next));
 
 // Protected admin routes
 router.use(authenticateAdmin(tokenService));
-router.get(   "/me",                 adminController.me);
-router.get(   "/users",              adminController.getAllUsers);
-router.get(   "/riders",             adminController.getAllRiders);
-router.patch( "/users/:id/block",    adminController.toggleBlockUser);
-router.patch( "/riders/:id/status",  adminController.updateRiderStatus);
+router.get(   "/me",                 (req, res, next) => adminController.me(req as any, res, next));
+router.get(   "/users",              (req, res, next) => adminController.getAllUsers(req, res, next));
+router.get(   "/riders",             (req, res, next) => adminController.getAllRiders(req, res, next));
+router.patch( "/users/:id/block",    (req, res, next) => adminController.toggleBlockUser(req, res, next));
+router.patch( "/riders/:id/status",  (req, res, next) => adminController.updateRiderStatus(req, res, next));
 
 export default router;

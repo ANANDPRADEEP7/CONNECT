@@ -7,18 +7,16 @@ const Dashboard = lazy(() => import('../pages/admin/Dashboard/AdminDashboard'))
 const UserManagement = lazy(() => import('../pages/admin/Dashboard/UserManagement'))
 const RiderManagement = lazy(() => import('../pages/admin/Dashboard/RiderManagement'))
 
-const AdminRoutes = () => (
-  <>
-    <Route element={<AdminProtectedRoute />}>
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="users" element={<UserManagement />} />
-        <Route path="riders" element={<RiderManagement />} />
-      </Route>
+const AdminRoutes = [
+  <Route key="admin-protected" element={<AdminProtectedRoute />}>
+    <Route path="/admin" element={<AdminLayout />}>
+      <Route index element={<Navigate to="dashboard" replace />} />
+      <Route path="dashboard" element={<Dashboard />} />
+      <Route path="users" element={<UserManagement />} />
+      <Route path="riders" element={<RiderManagement />} />
     </Route>
-  </>
-)
+  </Route>
+];
 
 export default AdminRoutes
 

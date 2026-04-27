@@ -1,5 +1,4 @@
-import jwt from "jsonwebtoken";
-import { ITokenService } from "../../domain/interfaces/ITokenService";
+import { ITokenService, TokenPayload } from "../../domain/interfaces/ITokenService";
 
 const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret";
 
@@ -21,13 +20,13 @@ export class JwtTokenService implements ITokenService {
         }
     }
 
-    generateAuthToken(payload: any): string {
+    generateAuthToken(payload: TokenPayload): string {
         return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
     }
 
-    verifyToken(token: string): any {
+    verifyToken(token: string): TokenPayload | null {
         try {
-            return jwt.verify(token, JWT_SECRET);
+            return jwt.verify(token, JWT_SECRET) as TokenPayload;
         } catch {
             return null;
         }

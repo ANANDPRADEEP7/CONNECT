@@ -1,8 +1,10 @@
-import { Request, Response, NextFunction } from "express";
-import { ITokenService } from "../../domain/interfaces/ITokenService";
+import { ITokenService, TokenPayload } from "../../domain/interfaces/ITokenService";
+import { HttpStatus } from "../../domain/enums/HttpStatus.enum";
+import { ResponseMessage } from "../../domain/enums/ResponseMessage.enum";
+import { NextFunction, Request, Response } from "express";
 
 export interface AuthRequest extends Request {
-  user?: any;
+  user?: TokenPayload;
 }
 
 export const authenticateUser = (tokenService: ITokenService) => {
@@ -10,12 +12,12 @@ export const authenticateUser = (tokenService: ITokenService) => {
     const token = req.cookies.token;
 
     if (!token) {
-      return res.status(401).json({ message: "No token, authorization denied" });
+      return res.status(HttpStatus.UNAUTHORIZED).json({ message: ResponseMessage.AUTH_REQUIRED });
     }
 
     const decoded = tokenService.verifyToken(token);
     if (!decoded) {
-      return res.status(401).json({ message: "Token is not valid" });
+      return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Token is not valid" });
     }
 
     req.user = decoded;
@@ -28,16 +30,16 @@ export const authenticateAdmin = (tokenService: ITokenService) => {
     const token = req.cookies.adminToken;
 
     if (!token) {
-      return res.status(401).json({ message: "No admin token, authorization denied" });
+      return res.status(HttpStatus.UNAUTHORIZED).json({ message: "No admin token, authorization denied" });
     }
 
     const decoded = tokenService.verifyToken(token);
     if (!decoded) {
-      return res.status(401).json({ message: "Token is not valid" });
+      return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Token is not valid" });
     }
 
     if (decoded.role !== "admin") {
-      return res.status(403).json({ message: "Access denied: Admins only" });
+      return res.status(HttpStatus.FORBIDDEN).json({ message: ResponseMessage.NOT_AUTHORIZED });
     }
 
     req.user = decoded;

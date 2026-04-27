@@ -12,8 +12,8 @@ const { rideController, tokenService } = AppContainer.getInstance();
 // All ride routes require authentication
 router.use(authenticateUser(tokenService));
 
-router.post("/",      rideController.createRide);  // POST  /ride
-router.get("/",       rideController.getAllRides);  // GET   /ride
-router.get("/my",     rideController.getMyRides);   // GET   /ride/my
+router.post("/",      (req, res, next) => rideController.createRide(req as any, res, next));  // POST  /ride
+router.get("/",       (req, res, next) => rideController.getAllRides(req as any, res, next));  // GET   /ride
+router.get("/my",     (req, res, next) => rideController.getMyRides(req as any, res, next));   // GET   /ride/my
 
 export default router;

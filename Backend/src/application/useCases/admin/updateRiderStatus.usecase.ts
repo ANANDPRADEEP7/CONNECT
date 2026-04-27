@@ -1,4 +1,5 @@
 import { IUserRepository } from "../../interfaces/repositories/User/IUserRepository";
+import { ResponseMessage } from "../../../domain/enums/ResponseMessage.enum";
 
 export class UpdateRiderStatusUseCase {
     constructor(private userRepository: IUserRepository) { }
@@ -7,7 +8,7 @@ export class UpdateRiderStatusUseCase {
         const user = await this.userRepository.findById(userId);
 
         if (!user) {
-            throw new Error("Rider not found");
+            throw new Error(ResponseMessage.RIDER_NOT_FOUND);
         }
 
         const updateData: any = { isRiderActive: status };
@@ -22,8 +23,9 @@ export class UpdateRiderStatusUseCase {
         await this.userRepository.update(userId, updateData);
 
         return {
-            message: `Rider ${status === "active" ? "approved" : "rejected"} successfully`,
-            isRiderActive: status
+            message: status === "active" ? ResponseMessage.RIDER_APPROVED : ResponseMessage.RIDER_REJECTED,
+            isRiderActive: status,
+            riderId: userId
         };
     }
 }

@@ -11,10 +11,10 @@ const MainRouter = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
-        <PublicRoutes />
-        <UserRoutes />
-        <RiderRoutes />
-        <AdminRoutes />
+        {PublicRoutes}
+        {UserRoutes}
+        {RiderRoutes}
+        {AdminRoutes}
 
         {/* fallback */}
         <Route path="*" element={<div>Page Not Found</div>} />

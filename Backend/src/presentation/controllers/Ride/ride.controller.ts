@@ -1,8 +1,10 @@
-import { Response } from "express";
+import { NextFunction, Response } from "express";
 import { AuthRequest } from "../../middleware/AuthMiddleware";
 import { CreateRideUseCase } from "../../../application/useCases/ride/createRide.usecase";
 import { GetRidesUseCase } from "../../../application/useCases/ride/getRides.usecase";
 import { GetMyRidesUseCase } from "../../../application/useCases/ride/getMyRides.usecase";
+import { HttpStatus } from "../../../domain/enums/HttpStatus.enum";
+import { ResponseMessage } from "../../../domain/enums/ResponseMessage.enum";
 
 /**
  * RideController – Presentation Layer
@@ -16,11 +18,11 @@ export class RideController {
   ) {}
 
   /** POST /ride – Create a new ride posting */
-  createRide = async (req: AuthRequest, res: Response) => {
+  createRide = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const riderId = req.user?.id || req.user?._id || req.user?.userId;
+      const riderId = req.user?.id;
       if (!riderId) {
-        return res.status(401).json({ message: "Unauthorized" });
+        return res.status(HttpStatus.UNAUTHORIZED).json({ message: ResponseMessage.AUTH_REQUIRED });
       }
 
       const { from, to, date, time, seats, pricePerSeat, description } = req.body;
@@ -34,33 +36,33 @@ export class RideController {
         description,
       });
 
-      return res.status(201).json({ message: "Ride posted successfully!", ride });
-    } catch (error: any) {
-      res.status(400).json({ message: error.message });
+      return res.status(HttpStatus.CREATED).json({ message: "Ride posted successfully!", ride });
+    } catch (error) {
+      next(error);
     }
   };
 
   /** GET /ride – Get all active rides */
-  getAllRides = async (_req: AuthRequest, res: Response) => {
+  getAllRides = async (_req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const rides = await this.getRidesUseCase.execute();
-      return res.status(200).json(rides);
-    } catch (error: any) {
-      res.status(400).json({ message: error.message });
+      return res.status(HttpStatus.OK).json(rides);
+    } catch (error) {
+      next(error);
     }
   };
 
   /** GET /ride/my – Get the current rider's own rides */
-  getMyRides = async (req: AuthRequest, res: Response) => {
+  getMyRides = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const riderId = req.user?.id || req.user?._id || req.user?.userId;
+      const riderId = req.user?.id;
       if (!riderId) {
-        return res.status(401).json({ message: "Unauthorized" });
+        return res.status(HttpStatus.UNAUTHORIZED).json({ message: ResponseMessage.AUTH_REQUIRED });
       }
       const rides = await this.getMyRidesUseCase.execute(riderId);
-      return res.status(200).json(rides);
-    } catch (error: any) {
-      res.status(400).json({ message: error.message });
+      return res.status(HttpStatus.OK).json(rides);
+    } catch (error) {
+      next(error);
     }
   };
 }

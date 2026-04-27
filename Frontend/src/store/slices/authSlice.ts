@@ -7,8 +7,14 @@ export interface AuthUser {
   name: string;
   email: string;
   role: string;
-  isRiderActive?: "pending" | "active" | "declined" | "not_applied";
+  isRiderActive?: "pending" | "active" | "declined" | "none";
   isBlocked?: boolean;
+  phonenumber?: string;
+  bio?: string;
+  govId?: string;
+  vehicleImage?: string;
+  pucImage?: string;
+  rcImage?: string;
 }
 
 interface AuthState {
