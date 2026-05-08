@@ -1,50 +1,61 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthRequest } from "../../middleware/AuthMiddleware";
 import { LoggerContainer } from "../../../infrastructure/DI/LoggerContainer";
-import { SignupUsecase } from "../../../application/useCases/auth/register.usecase";
-import { VerifyOtpUseCase } from "../../../application/useCases/auth/verifyOtp.usecase";
-import { ResendOtpUseCase } from "../../../application/useCases/auth/resendOtp.usecase";
-import { LoginUseCase } from "../../../application/useCases/auth/login.usecase";
-import { VerifyEmailUsecase } from "../../../application/useCases/auth/verifyEmail.usecase";
-import { ResetPasswordUsecase } from "../../../application/useCases/auth/resetPassword.usecase";
-import { GoogleLoginUsecase } from "../../../application/useCases/auth/googleLogin.usecase";
-import { GetUserDetailsUseCase } from "../../../application/useCases/user/getUserDetails.usecase";
 import { HttpStatus } from "../../../domain/enums/HttpStatus.enum";
 import { ResponseMessage } from "../../../domain/enums/ResponseMessage.enum";
-
-
+import { ISignupusecase } from "../../../application/interfaces/usecases/Auth/signup.usecase.interface";
+import { IVerifyOtpusecase } from "../../../application/interfaces/usecases/Auth/verifyOtp.usecase.inteface";
+import { IResendOtpusecase } from "../../../application/interfaces/usecases/Auth/resendOtp.usecase.interface";
+import { ILoginusecase } from "../../../application/interfaces/usecases/Auth/login.usecase.interface";
+import { IVerifyEmailUsecase } from "../../../application/interfaces/usecases/Auth/verifyEmail.usecase.interface";
+import { IResetPasswordUsecase } from "../../../application/interfaces/usecases/Auth/resetPasswor.usecase.interface";
+import { IGoogleLoginUsecase } from "../../../application/interfaces/usecases/Auth/googleLogin.usecase.interface";
+import { IGetUserDetailsUseCase } from "../../../application/interfaces/usecases/Auth/getuserDetails.usecase.interface";
 
 const loggerContainer = LoggerContainer.getInstance();
 const loggerService = loggerContainer.getLoggerService();
 
 
+type SignupResult =
+  | { user: { _id: string } }
+  | { message: string };
 
 export class UserController {
   constructor(
-    private readonly signupUsecase: SignupUsecase,
-    private readonly verifyOtpUseCase: VerifyOtpUseCase,
-    private readonly resendOtpUseCase: ResendOtpUseCase,
-    private readonly loginUseCase: LoginUseCase,
-    private readonly verifyEmailUsecase: VerifyEmailUsecase,
-    private readonly resetPasswordUsecase: ResetPasswordUsecase,
-    private readonly googleLoginUsecase: GoogleLoginUsecase,
-    private readonly getUserDetailsUseCase: GetUserDetailsUseCase
+    private readonly signupUsecase: ISignupusecase,
+    private readonly verifyOtpUseCase: IVerifyOtpusecase,
+    private readonly resendOtpUseCase: IResendOtpusecase,
+    private readonly loginUseCase: ILoginusecase,
+    private readonly verifyEmailUsecase: IVerifyEmailUsecase,
+    private readonly resetPasswordUsecase: IResetPasswordUsecase,
+    private readonly googleLoginUsecase: IGoogleLoginUsecase,
+    private readonly getUserDetailsUseCase: IGetUserDetailsUseCase 
   ) { }
-
-
-
 
   register = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { email } = req.body;
       console.log(req.body);
 
-      loggerService.logUserAction('Registration attempt', undefined, { email });
+      loggerService.logUserAction("Registration attempt", undefined, { email });
+   
+      const result = (await this.signupUsecase.execute(req.body)) as SignupResult;
 
-      const result = await this.signupUsecase.execute(req.body);
+      if ("user" in result) {
+        loggerService.logUserAction(
+          "Registration successful",
+          result.user._id,
+          { email }
+        );
+      } else {
+        loggerService.logUserAction(
+          "Registration completed (no user returned)",
+          undefined,
+          { email }
+        );
+      }
 
-      loggerService.logUserAction('Registration successful', result.user?._id, { email });
-      res.status(HttpStatus.CREATED).json(result);
+      return res.status(HttpStatus.CREATED).json(result);
     } catch (error) {
       next(error);
     }
@@ -52,7 +63,6 @@ export class UserController {
 
   VerifyOtp = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log("verify otp", req.body);
       const { otp, email } = req.body;
 
       const result = await this.verifyOtpUseCase.execute(otp, email);
@@ -81,7 +91,7 @@ export class UserController {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
       return res.status(HttpStatus.OK).json(result);
@@ -93,7 +103,9 @@ export class UserController {
   logout = async (req: Request, res: Response, next: NextFunction) => {
     try {
       res.clearCookie("token");
-      return res.status(HttpStatus.OK).json({ message: ResponseMessage.LOGOUT_SUCCESS });
+      return res
+        .status(HttpStatus.OK)
+        .json({ message: ResponseMessage.LOGOUT_SUCCESS });
     } catch (error) {
       next(error);
     }
@@ -103,7 +115,9 @@ export class UserController {
     try {
       const { email } = req.body;
       await this.verifyEmailUsecase.execute(email);
-      return res.status(HttpStatus.OK).json({ message: ResponseMessage.PASSWORD_RESET_LINK_SENT });
+      return res.status(HttpStatus.OK).json({
+        message: ResponseMessage.PASSWORD_RESET_LINK_SENT,
+      });
     } catch (error) {
       next(error);
     }
@@ -113,7 +127,9 @@ export class UserController {
     try {
       const { token, password } = req.body;
       await this.resetPasswordUsecase.execute(token, password);
-      return res.status(HttpStatus.OK).json({ message: ResponseMessage.PASSWORD_RESET_SUCCESS });
+      return res.status(HttpStatus.OK).json({
+        message: ResponseMessage.PASSWORD_RESET_SUCCESS,
+      });
     } catch (error) {
       next(error);
     }
@@ -124,7 +140,9 @@ export class UserController {
       const { token: googleToken } = req.body;
 
       if (!googleToken) {
-        return res.status(HttpStatus.BAD_REQUEST).json({ message: "Google ID token is required" });
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          message: "Google ID token is required",
+        });
       }
 
       const result = await this.googleLoginUsecase.execute(googleToken);
@@ -145,12 +163,15 @@ export class UserController {
   me = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const decodedUser = req.user;
-      console.log("decodedUser", decodedUser);
+
       if (!decodedUser || !decodedUser.id) {
-        return res.status(HttpStatus.UNAUTHORIZED).json({ message: ResponseMessage.AUTH_REQUIRED });
+        return res.status(HttpStatus.UNAUTHORIZED).json({
+          message: ResponseMessage.AUTH_REQUIRED,
+        });
       }
 
       const user = await this.getUserDetailsUseCase.execute(decodedUser.id);
+
       return res.status(HttpStatus.OK).json({ user });
     } catch (error) {
       next(error);

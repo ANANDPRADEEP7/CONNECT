@@ -4,16 +4,12 @@
  * Import this file once in app.ts or via tsconfig "types" to make it global.
  */
 import { Request } from "express";
+import { TokenPayload } from "../../domain/interfaces/ITokenService";
 
 declare global {
   namespace Express {
     interface Request {
-      user?: {
-        id: string;
-        email: string;
-        role: string;
-        [key: string]: any;
-      };
+      user?: TokenPayload;
     }
   }
 }

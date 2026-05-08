@@ -3,11 +3,13 @@ import { OtpData } from "../../../domain/entities/User/Otp.entities";
 import { User } from "../../../domain/entities/User/user.entities";
 import { OtpModel } from "../../schema/otpSchema";
 import { UserModel } from "../../schema/userSchema";
+import { BaseRepository } from "../BaseRepository/BaseRepository";
 
 
-
-
-export class UserRepository implements IUserRepository {
+export class UserRepository extends BaseRepository<User> implements IUserRepository {
+   constructor() {
+    super(UserModel);
+  }
   async findByEmail(email: string): Promise<User | null> {
     const user = await UserModel.findOne({ email });
     return user ? user.toObject() : null;
@@ -56,8 +58,4 @@ export class UserRepository implements IUserRepository {
     return users.map(user => user.toObject());
   }
 
-  async findById(id: string): Promise<User | null> {
-    const user = await UserModel.findById(id);
-    return user ? user.toObject() : null;
-  }
 }

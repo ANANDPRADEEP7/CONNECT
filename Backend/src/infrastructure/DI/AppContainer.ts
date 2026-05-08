@@ -62,7 +62,7 @@ import { RideController }         from "../../presentation/controllers/Ride/ride
 export class AppContainer {
   private static _instance: AppContainer;
 
-  // ── Singletons (lazy-initialised) ──────────────────────────────────────────
+  
 
   // Infrastructure
   readonly userRepository     = new UserRepository();
@@ -114,6 +114,7 @@ export class AppContainer {
     this.googleLoginUsecase,
     this.getUserDetailsUseCase,
   );
+  
 
   readonly userProfileController = new UserProfileController(
     this.updateProfileUseCase,

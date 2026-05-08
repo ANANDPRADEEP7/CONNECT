@@ -1,32 +1,49 @@
 import { NextFunction, Response } from "express";
 import { AuthRequest } from "../../middleware/AuthMiddleware";
-import { CreateRideUseCase } from "../../../application/useCases/ride/createRide.usecase";
-import { GetRidesUseCase } from "../../../application/useCases/ride/getRides.usecase";
-import { GetMyRidesUseCase } from "../../../application/useCases/ride/getMyRides.usecase";
 import { HttpStatus } from "../../../domain/enums/HttpStatus.enum";
 import { ResponseMessage } from "../../../domain/enums/ResponseMessage.enum";
+import { ICreateRideUseCase } from "../../../application/interfaces/usecases/Rider/createRide.usecase.interface";
+import { IGetRidesUseCase } from "../../../application/interfaces/usecases/Rider/getRides.usecase.interface";
+import { IGetMyRidesUseCase } from "../../../application/interfaces/usecases/Rider/getMyRides.usecase.interface";
 
-/**
- * RideController – Presentation Layer
- * Handles HTTP requests for ride operations.
- */
+
 export class RideController {
   constructor(
-    private readonly createRideUseCase: CreateRideUseCase,
-    private readonly getRidesUseCase: GetRidesUseCase,
-    private readonly getMyRidesUseCase: GetMyRidesUseCase
+    private readonly createRideUseCase: ICreateRideUseCase,
+    private readonly getRidesUseCase: IGetRidesUseCase,
+    private readonly getMyRidesUseCase: IGetMyRidesUseCase
   ) {}
 
-  /** POST /ride – Create a new ride posting */
-  createRide = async (req: AuthRequest, res: Response, next: NextFunction) => {
-    try {
-      const riderId = req.user?.id;
-      if (!riderId) {
-        return res.status(HttpStatus.UNAUTHORIZED).json({ message: ResponseMessage.AUTH_REQUIRED });
-      }
 
-      const { from, to, date, time, seats, pricePerSeat, description } = req.body;
-      const ride = await this.createRideUseCase.execute(riderId, {
+createRide = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const riderId = req.user?.id;
+
+    if (!riderId) {
+      return res
+        .status(HttpStatus.UNAUTHORIZED)
+        .json({
+          message: ResponseMessage.AUTH_REQUIRED,
+        });
+    }
+
+    const {
+      from,
+      to,
+      date,
+      time,
+      seats,
+      pricePerSeat,
+      description,
+    } = req.body;
+
+    const response = await this.createRideUseCase.execute(
+      riderId,
+      {
         from,
         to,
         date,
@@ -34,13 +51,17 @@ export class RideController {
         seats: Number(seats),
         pricePerSeat: Number(pricePerSeat),
         description,
-      });
+      }
+    );
 
-      return res.status(HttpStatus.CREATED).json({ message: "Ride posted successfully!", ride });
-    } catch (error) {
-      next(error);
-    }
-  };
+    return res
+      .status(HttpStatus.CREATED)
+      .json(response);
+
+  } catch (error) {
+    next(error);
+  }
+};
 
   /** GET /ride – Get all active rides */
   getAllRides = async (_req: AuthRequest, res: Response, next: NextFunction) => {

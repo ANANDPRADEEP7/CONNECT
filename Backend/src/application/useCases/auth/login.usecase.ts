@@ -2,14 +2,15 @@ import { IUserRepository } from "../../interfaces/repositories/User/IUserReposit
 import { ITokenService } from "../../../domain/interfaces/ITokenService";
 import bcrypt from "bcrypt";
 import { ResponseMessage } from "../../../domain/enums/ResponseMessage.enum";
+import { ILoginusecase, LoginResponse } from "../../interfaces/usecases/Auth/login.usecase.interface";
 
-export class LoginUseCase {
+export class LoginUseCase implements  ILoginusecase {
     constructor(
         private userRepository: IUserRepository,
         private tokenService: ITokenService
     ) { }
 
-    async execute(email: string, password: string) {
+    async execute(email: string, password: string):Promise<LoginResponse> {
         // 1. Find user in MongoDB
         const user = await this.userRepository.findByEmailFromDB(email);
         if (!user) {

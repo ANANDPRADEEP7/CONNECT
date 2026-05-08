@@ -1,7 +1,8 @@
 import { IUserRepository } from "../../interfaces/repositories/User/IUserRepository";
+import { IResendOtpusecase } from "../../interfaces/usecases/Auth/resendOtp.usecase.interface";
 import { EmailService } from "../../services/EmailService";
 
-export class ResendOtpUseCase {
+export class ResendOtpUseCase implements IResendOtpusecase{
     constructor(
         private userRepository: IUserRepository,
         private emailService: EmailService

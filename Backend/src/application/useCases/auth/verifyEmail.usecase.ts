@@ -2,6 +2,7 @@ import { IUserRepository } from "../../interfaces/repositories/User/IUserReposit
 import { IEmailService } from "../../../domain/interfaces/IEmailService";
 import { ITokenService } from "../../../domain/interfaces/ITokenService";
 import { ICacheService } from "../../../domain/interfaces/ICacheService";
+import { IVerifyEmailUsecase } from "../../interfaces/usecases/Auth/verifyEmail.usecase.interface";
 
 const CLIENT_URL = process.env.FRONTEND_URL;
 
@@ -9,7 +10,7 @@ const CLIENT_URL = process.env.FRONTEND_URL;
  * VerifyEmailUsecase
  * Sends a password-reset link to the user's email address.
  */
-export class VerifyEmailUsecase {
+export class VerifyEmailUsecase implements IVerifyEmailUsecase {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly emailService: IEmailService,

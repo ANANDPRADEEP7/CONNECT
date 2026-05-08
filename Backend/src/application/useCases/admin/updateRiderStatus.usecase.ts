@@ -1,7 +1,8 @@
 import { IUserRepository } from "../../interfaces/repositories/User/IUserRepository";
 import { ResponseMessage } from "../../../domain/enums/ResponseMessage.enum";
+import { IUpdateRiderStatusUseCase } from "../../interfaces/usecases/Admin/updateRiderStatus.usecase.interface";
 
-export class UpdateRiderStatusUseCase {
+export class UpdateRiderStatusUseCase implements IUpdateRiderStatusUseCase {
     constructor(private userRepository: IUserRepository) { }
 
     async execute(userId: string, status: "active" | "declined") {

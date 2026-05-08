@@ -1,6 +1,7 @@
 import { IUserRepository } from "../../interfaces/repositories/User/IUserRepository";
+import { IGetAllUsersUseCase } from "../../interfaces/usecases/Admin/getallUsers.usecase.interface";
 
-export class GetAllUsersUseCase {
+export class GetAllUsersUseCase implements IGetAllUsersUseCase {
     constructor(private userRepository: IUserRepository) { }
 
     async execute() {

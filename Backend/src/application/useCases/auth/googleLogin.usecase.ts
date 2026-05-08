@@ -1,8 +1,9 @@
 import { IUserRepository } from "../../interfaces/repositories/User/IUserRepository";
 import { GoogleAuthService } from "../../../infrastructure/services/GoogleAuthService";
 import { ITokenService } from "../../../domain/interfaces/ITokenService";
+import { IGoogleLoginUsecase } from "../../interfaces/usecases/Auth/googleLogin.usecase.interface";
 
-export class GoogleLoginUsecase {
+export class GoogleLoginUsecase implements IGoogleLoginUsecase {
     constructor(
         private readonly userRepository: IUserRepository,
         private readonly googleAuthService: GoogleAuthService,

@@ -4,22 +4,23 @@
  * All dependency creation is handled by AppContainer.
  */
 import { Router } from "express";
-import { AppContainer }      from "../../../infrastructure/DI/AppContainer";
+import { AppContainer } from "../../../infrastructure/DI/AppContainer";
 import { authenticateAdmin } from "../../middleware/AuthMiddleware";
+import { catchAsync } from "../../utils/catchAsync";
 
-const router  = Router();
+const router = Router();
 const { adminController, tokenService } = AppContainer.getInstance();
 
 // Public admin routes
-router.post("/login",  (req, res, next) => adminController.login(req, res, next));
-router.post("/logout", (req, res, next) => adminController.logout(req, res, next));
+router.post("/login", catchAsync(adminController.login));
+router.post("/logout", catchAsync(adminController.logout));
 
 // Protected admin routes
 router.use(authenticateAdmin(tokenService));
-router.get(   "/me",                 (req, res, next) => adminController.me(req as any, res, next));
-router.get(   "/users",              (req, res, next) => adminController.getAllUsers(req, res, next));
-router.get(   "/riders",             (req, res, next) => adminController.getAllRiders(req, res, next));
-router.patch( "/users/:id/block",    (req, res, next) => adminController.toggleBlockUser(req, res, next));
-router.patch( "/riders/:id/status",  (req, res, next) => adminController.updateRiderStatus(req, res, next));
+router.get("/me", catchAsync(adminController.me));
+router.get("/users", catchAsync(adminController.getAllUsers));
+router.get("/riders", catchAsync(adminController.getAllRiders));
+router.patch("/users/:id/block", catchAsync(adminController.toggleBlockUser));
+router.patch("/riders/:id/status", catchAsync(adminController.updateRiderStatus));
 
 export default router;

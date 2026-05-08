@@ -1,15 +1,16 @@
 import { IUserRepository } from "../../interfaces/repositories/User/IUserRepository";
+import { ISignupusecase } from "../../interfaces/usecases/Auth/signup.usecase.interface";
 import { EmailService } from "../../services/EmailService";
 
 
-interface Signupdata {
+export interface Signupdata {
   username: string,
   email: string,
   phone: number,
   password: string
 }
 
-export class SignupUsecase {
+export class SignupUsecase implements ISignupusecase {
   constructor(
     private userRepository: IUserRepository,
     private emailService: EmailService,

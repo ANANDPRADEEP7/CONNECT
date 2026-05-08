@@ -1,7 +1,8 @@
 import { OtpData } from "../../../../domain/entities/User/Otp.entities";
 import type { User } from "../../../../domain/entities/User/user.entities";
+import { IBaseRepository } from "../BaseRepository/IBaseRepository";
 
-export interface IUserRepository {
+export interface IUserRepository extends IBaseRepository<User>{
   findByEmail(email: string): Promise<User | null>;
   findByEmailFromDB(email: string): Promise<User | null>;
   create(user: Partial<User>): Promise<User>;
@@ -10,5 +11,5 @@ export interface IUserRepository {
   getOtp(email: string): Promise<OtpData | null>;
   deleteOtp(email: string): Promise<void>;
   findAll(): Promise<User[]>;
-  findById(id: string): Promise<User | null>;
 }
+

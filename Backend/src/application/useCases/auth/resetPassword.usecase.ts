@@ -2,13 +2,14 @@ import { IUserRepository } from "../../interfaces/repositories/User/IUserReposit
 import { ITokenService } from "../../../domain/interfaces/ITokenService";
 import { ICacheService } from "../../../domain/interfaces/ICacheService";
 import bcrypt from "bcrypt";
+import { IResetPasswordUsecase } from "../../interfaces/usecases/Auth/resetPasswor.usecase.interface";
 
 /**
  * ResetPasswordUsecase
  * Verifies the reset token, checks the cache, hashes the new password,
  * updates the user, and invalidates the cache entry.
  */
-export class ResetPasswordUsecase {
+export class ResetPasswordUsecase implements IResetPasswordUsecase {
     constructor(
         private readonly userRepository: IUserRepository,
         private readonly tokenService: ITokenService,

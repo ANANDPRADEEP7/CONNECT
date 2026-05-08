@@ -1,22 +1,22 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthRequest } from "../../middleware/AuthMiddleware";
-import { AdminLoginUseCase } from "../../../application/useCases/admin/adminLogin.usecase";
-import { GetAllUsersUseCase } from "../../../application/useCases/admin/getAllUsers.usecase";
-import { ToggleBlockUserUseCase } from "../../../application/useCases/admin/toggleBlockUser.usecase";
-import { GetAllRidersUseCase } from "../../../application/useCases/admin/getAllRiders.usecase";
-import { UpdateRiderStatusUseCase } from "../../../application/useCases/admin/updateRiderStatus.usecase";
-import { GetUserDetailsUseCase } from "../../../application/useCases/user/getUserDetails.usecase";
 import { HttpStatus } from "../../../domain/enums/HttpStatus.enum";
 import { ResponseMessage } from "../../../domain/enums/ResponseMessage.enum";
+import { IAdminLoginUseCase } from "../../../application/interfaces/usecases/Admin/adminLogin.usecase.interface";
+import { IGetAllUsersUseCase } from "../../../application/interfaces/usecases/Admin/getallUsers.usecase.interface";
+import { IToggleBlockUserUseCase } from "../../../application/interfaces/usecases/Admin/toggleBlockUser.usecase.interface";
+import { IGetAllRidersUseCase } from "../../../application/interfaces/usecases/Admin/getAllRiders.usecase.interface";
+import { IUpdateRiderStatusUseCase } from "../../../application/interfaces/usecases/Admin/updateRiderStatus.usecase.interface";
+import { IGetUserDetailsUseCase } from "../../../application/interfaces/usecases/Auth/getuserDetails.usecase.interface";
 
 export class AdminController {
   constructor(
-    private readonly adminLoginUseCase: AdminLoginUseCase,
-    private readonly getAllUsersUseCase: GetAllUsersUseCase,
-    private readonly toggleBlockUserUseCase: ToggleBlockUserUseCase,
-    private readonly getAllRidersUseCase: GetAllRidersUseCase,
-    private readonly updateRiderStatusUseCase: UpdateRiderStatusUseCase,
-    private readonly getUserDetailsUseCase: GetUserDetailsUseCase
+    private readonly adminLoginUseCase: IAdminLoginUseCase,
+    private readonly getAllUsersUseCase: IGetAllUsersUseCase,
+    private readonly toggleBlockUserUseCase: IToggleBlockUserUseCase,
+    private readonly getAllRidersUseCase: IGetAllRidersUseCase,
+    private readonly updateRiderStatusUseCase: IUpdateRiderStatusUseCase,
+    private readonly getUserDetailsUseCase: IGetUserDetailsUseCase
   ) {}
 
   login = async (req: Request, res: Response, next: NextFunction) => {

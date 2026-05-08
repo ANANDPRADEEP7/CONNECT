@@ -1,13 +1,10 @@
-/**
- * Auth Routes – Presentation Layer
- * Thin router: only wires HTTP verbs to controller methods.
- * All dependency creation is handled by AppContainer.
- */
+
 import { Router } from "express";
 import { AppContainer } from "../../../infrastructure/DI/AppContainer";
 import { authenticateUser } from "../../middleware/AuthMiddleware";
 
 const router = Router();
+// depinc
 const { authController, tokenService } = AppContainer.getInstance();
 
 router.post("/signup", (req, res, next) => authController.register(req, res, next));

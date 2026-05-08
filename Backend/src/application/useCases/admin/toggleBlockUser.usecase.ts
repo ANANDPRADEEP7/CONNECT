@@ -1,6 +1,7 @@
 import { IUserRepository } from "../../interfaces/repositories/User/IUserRepository";
+import { IToggleBlockUserUseCase } from "../../interfaces/usecases/Admin/toggleBlockUser.usecase.interface";
 
-export class ToggleBlockUserUseCase {
+export class ToggleBlockUserUseCase implements IToggleBlockUserUseCase {
     constructor(private userRepository: IUserRepository) { }
 
     async execute(userId: string) {

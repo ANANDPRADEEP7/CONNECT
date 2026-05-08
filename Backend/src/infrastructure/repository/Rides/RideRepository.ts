@@ -1,12 +1,13 @@
 import { IRideRepository } from "../../../application/interfaces/repositories/Ride/IRideRepository";
 import { Ride } from "../../../domain/entities/Ride/ride.entities";
 import { RideModel } from "../../schema/rideSchema";
+import { BaseRepository } from "../BaseRepository/BaseRepository";
 
-/**
- * RideRepository – Infrastructure Layer
- * Concrete implementation using Mongoose.
- */
-export class RideRepository implements IRideRepository {
+
+export class RideRepository extends BaseRepository<Ride> implements IRideRepository {
+   constructor() {
+    super(RideModel);
+  }
   async create(ride: Omit<Ride, "_id" | "createdAt" | "updatedAt">): Promise<Ride> {
     const doc = await RideModel.create(ride);
     return doc.toObject();
@@ -21,11 +22,6 @@ export class RideRepository implements IRideRepository {
   async findByRider(riderId: string): Promise<Ride[]> {
     const docs = await RideModel.find({ riderId }).sort({ createdAt: -1 });
     return docs.map((d) => d.toObject());
-  }
-
-  async findById(id: string): Promise<Ride | null> {
-    const doc = await RideModel.findById(id);
-    return doc ? doc.toObject() : null;
   }
 
   async updateStatus(id: string, status: Ride["status"]): Promise<void> {

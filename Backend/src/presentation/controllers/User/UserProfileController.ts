@@ -4,11 +4,13 @@ import { UpdateProfileUseCase } from "../../../application/useCases/user/updateP
 import { GetUserDetailsUseCase } from "../../../application/useCases/user/getUserDetails.usecase";
 import { HttpStatus } from "../../../domain/enums/HttpStatus.enum";
 import { ResponseMessage } from "../../../domain/enums/ResponseMessage.enum";
+import { IUpdateProfileUseCase } from "../../../application/interfaces/usecases/User/updateProfile.usecase.interface";
+import { IGetUserDetailsUseCase } from "../../../application/interfaces/usecases/Auth/getuserDetails.usecase.interface";
 
 export class UserProfileController {
     constructor(
-        private readonly updateProfileUseCase: UpdateProfileUseCase,
-        private readonly getUserDetailsUseCase: GetUserDetailsUseCase
+        private readonly updateProfileUseCase: IUpdateProfileUseCase,
+        private readonly getUserDetailsUseCase: IGetUserDetailsUseCase
     ) { }
 
     getUserDetails = async (req: Request, res: Response, next: NextFunction) => {

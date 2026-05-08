@@ -1,8 +1,9 @@
 import { IUserRepository } from "../../interfaces/repositories/User/IUserRepository";
 import bcrypt from "bcrypt";
+import { IVerifyOtpusecase } from "../../interfaces/usecases/Auth/verifyOtp.usecase.inteface";
 
 
-export class VerifyOtpUseCase{
+export class VerifyOtpUseCase implements IVerifyOtpusecase{
   constructor(private userRepository: IUserRepository,){}
 
   async execute(Otp:string,email:string){

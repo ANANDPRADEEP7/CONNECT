@@ -1,12 +1,13 @@
+import jwt from "jsonwebtoken";
 import { ITokenService, TokenPayload } from "../../domain/interfaces/ITokenService";
 
 const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret";
 
 /**
  * JWT Token Service - Infrastructure layer
- * Handles generating and verifying short-lived password-reset tokens
  */
 export class JwtTokenService implements ITokenService {
+
     generateResetToken(userId: string): string {
         return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "10m" });
     }

@@ -2,8 +2,9 @@ import { IUserRepository } from "../../interfaces/repositories/User/IUserReposit
 import { ITokenService } from "../../../domain/interfaces/ITokenService";
 import bcrypt from "bcrypt";
 import { ResponseMessage } from "../../../domain/enums/ResponseMessage.enum";
+import { IAdminLoginUseCase } from "../../interfaces/usecases/Admin/adminLogin.usecase.interface";
 
-export class AdminLoginUseCase {
+export class AdminLoginUseCase implements IAdminLoginUseCase {
     constructor(
         private userRepository: IUserRepository,
         private tokenService: ITokenService

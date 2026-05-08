@@ -1,9 +1,10 @@
 import { IUserRepository } from "../../interfaces/repositories/User/IUserRepository";
+import { GetAllRidersResponse, IGetAllRidersUseCase } from "../../interfaces/usecases/Admin/getAllRiders.usecase.interface";
 
-export class GetAllRidersUseCase {
+export class GetAllRidersUseCase implements IGetAllRidersUseCase {
     constructor(private userRepository: IUserRepository) { }
 
-    async execute() {
+    async execute(): Promise<GetAllRidersResponse[]> {
         const users = await this.userRepository.findAll();
         // Return any user who has submitted rider details (isRiderActive !== "none")
         return users

@@ -1,13 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { LoggerContainer } from '../../infrastructure/DI/LoggerContainer';
+import { TokenPayload } from '../../domain/interfaces/ITokenService';
 
 // Extend Request interface to include user
 declare global {
   namespace Express {
     interface Request {
-      user?: {
-        id: string;
-      };
+      user?: TokenPayload;
     }
   }
 }
