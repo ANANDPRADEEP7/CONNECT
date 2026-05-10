@@ -5,8 +5,5 @@ export interface UpdateRiderStatusResponse {
 }
 
 export interface IUpdateRiderStatusUseCase {
-  execute(
-    userId: string,
-    status: "active" | "declined"
-  ): Promise<UpdateRiderStatusResponse>;
+  execute(userId: string, status: "active" | "declined"): Promise<UpdateRiderStatusResponse>;
 }

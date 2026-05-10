@@ -11,6 +11,14 @@ export interface GetAllRidersResponse {
   rcImage?: string;
 }
 
+export interface PaginatedRidersResponse {
+  data: GetAllRidersResponse[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface IGetAllRidersUseCase {
-  execute(): Promise<GetAllRidersResponse[]>;
+  execute(page?: number, limit?: number): Promise<PaginatedRidersResponse>;
 }

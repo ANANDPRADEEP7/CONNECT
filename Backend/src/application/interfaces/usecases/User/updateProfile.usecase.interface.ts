@@ -1,4 +1,3 @@
-
 export interface UpdateProfileRequest {
   bio?: string;
   govId?: string;
@@ -13,8 +12,5 @@ export interface UpdateProfileResponse {
 }
 
 export interface IUpdateProfileUseCase {
-  execute(
-    userId: string,
-    profileData: UpdateProfileRequest
-  ): Promise<UpdateProfileResponse>;
+  execute(userId: string, profileData: UpdateProfileRequest): Promise<UpdateProfileResponse>;
 }

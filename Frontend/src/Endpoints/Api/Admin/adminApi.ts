@@ -10,16 +10,16 @@ export const adminApi = {
     const response = await api.post("/admin/logout");
     return response.data;
   },
-  getUsers: async () => {
-    const response = await api.get("/admin/users");
+  getUsers: async (page: number = 1, limit: number = 10) => {
+    const response = await api.get("/admin/users", { params: { page, limit } });
     return response.data;
   },
   toggleBlockUser: async (id: string) => {
     const response = await api.patch(`/admin/users/${id}/block`);
     return response.data;
   },
-  getRiders: async () => {
-    const response = await api.get("/admin/riders");
+  getRiders: async (page: number = 1, limit: number = 10) => {
+    const response = await api.get("/admin/riders", { params: { page, limit } });
     return response.data;
   },
   updateRiderStatus: async (id: string, status: "active" | "declined") => {

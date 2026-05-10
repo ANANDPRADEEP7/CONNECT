@@ -7,6 +7,14 @@ export interface GetAllUsersResponse {
   blocked: boolean;
 }
 
+export interface PaginatedUsersResponse {
+  data: GetAllUsersResponse[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface IGetAllUsersUseCase {
-  execute(): Promise<GetAllUsersResponse[]>;
+  execute(page?: number, limit?: number): Promise<PaginatedUsersResponse>;
 }

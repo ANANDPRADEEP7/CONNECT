@@ -46,7 +46,7 @@ const RideSchema = new Schema(
       default: "active",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const RideModel: Model<RideDocument> = mongoose.model<RideDocument>("Ride", RideSchema);

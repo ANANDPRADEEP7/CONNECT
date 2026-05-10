@@ -1,27 +1,26 @@
 import { IEmailService } from "../../domain/interfaces/IEmailService";
 
-
 /**
  * Email Service - Application layer
  * Provides email functionality to the application layer
  * Depends on abstraction (IEmailService) not concrete implementation
  */
 export class EmailService {
-    constructor(private emailService: IEmailService) { }
+  constructor(private emailService: IEmailService) {}
 
-    /**
-     * Send a raw email
-     */
-    async sendMail(to: string, subject: string, html: string): Promise<void> {
-        await this.emailService.sendMail(to, subject, html);
-    }
+  /**
+   * Send a raw email
+   */
+  async sendMail(to: string, subject: string, html: string): Promise<void> {
+    await this.emailService.sendMail(to, subject, html);
+  }
 
-    /**
-     * Send OTP verification email
-     */
-    async sendOtpEmail(email: string, otp: string): Promise<void> {
-        const subject = "CONNECT - Verify Your Email";
-        const html = `
+  /**
+   * Send OTP verification email
+   */
+  async sendOtpEmail(email: string, otp: string): Promise<void> {
+    const subject = "CONNECT - Verify Your Email";
+    const html = `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #18181b; border-radius: 16px; color: #fff;">
         <h2 style="text-align: center; color: #a78bfa;">CONNECT</h2>
         <p style="text-align: center; font-size: 16px; color: #d4d4d8;">Your OTP verification code is:</p>
@@ -34,6 +33,6 @@ export class EmailService {
       </div>
     `;
 
-        await this.emailService.sendMail(email, subject, html);
-    }
+    await this.emailService.sendMail(email, subject, html);
+  }
 }

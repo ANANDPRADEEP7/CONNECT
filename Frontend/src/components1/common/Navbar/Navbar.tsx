@@ -29,8 +29,8 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/30">
       <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/home" className="text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "var(--font-heading)" }}>
-          co<span className="inline-block border border-foreground rounded px-1 mx-0.5 text-lg align-middle">n</span>nect
+        <Link to="/home" className="flex items-center">
+          <img src="/logo.png" alt="Connect Logo" className="h-16 object-contain invert dark:invert-0" />
         </Link>
 
         {/* Right nav */}

@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 import { LoggerContainer } from "./infrastructure/DI/LoggerContainer";
 import app from "./app";
 
-
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/connect";
 
@@ -25,4 +24,3 @@ mongoose
     loggerService.error("MongoDB connection failed", { error: error.message });
     process.exit(1);
   });
-

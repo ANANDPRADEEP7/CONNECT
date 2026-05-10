@@ -1,5 +1,3 @@
-
-
 export interface CreateRideRequest {
   from: string;
   to: string;
@@ -31,8 +29,5 @@ export interface CreateRideResponse {
 }
 
 export interface ICreateRideUseCase {
-  execute(
-    riderId: string,
-    data: CreateRideRequest
-  ): Promise<CreateRideResponse>;
+  execute(riderId: string, data: CreateRideRequest): Promise<CreateRideResponse>;
 }

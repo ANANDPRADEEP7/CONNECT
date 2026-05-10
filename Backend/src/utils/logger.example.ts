@@ -15,7 +15,7 @@
 // // 3. Logging in routes
 // export const exampleRouteHandler = (req:Request, res:Response) => {
 //   logger.info(`Processing request for ${req.method} ${req.path}`);
-  
+
 //   try {
 //     // Your logic here
 //     logger.info('Request processed successfully');
@@ -31,22 +31,22 @@
 // export class ExampleService {
 //   async processData(data: any) {
 //     logger.debug('Starting data processing', { dataSize: data.length });
-    
+
 //     try {
 //       // Processing logic
 //       const result = await this.doProcess(data);
-      
-//       logger.info('Data processing completed', { 
+
+//       logger.info('Data processing completed', {
 //         processedItems: result.length,
-//         duration: Date.now() - startTime 
+//         duration: Date.now() - startTime
 //       });
-      
+
 //       return result;
 //     } catch (error:unknown) {
 //       if(error instanceof Error)
-//       logger.error('Data processing failed', { 
+//       logger.error('Data processing failed', {
 //         error: error.message,
-//         inputSize: data.length 
+//         inputSize: data.length
 //       });
 //       throw error;
 //     }

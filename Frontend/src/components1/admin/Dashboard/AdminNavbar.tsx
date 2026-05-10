@@ -1,17 +1,14 @@
-import { Search, User, Menu } from "lucide-react";
-import { useState } from "react";
+import { User, Menu } from "lucide-react";
+
 
 const AdminNavbar = () => {
-  const [searchOpen, setSearchOpen] = useState(false);
+
 
   return (
     <header className="h-14 border-b border-border bg-card flex items-center justify-between px-6 shrink-0">
-      <h1
-        className="text-lg tracking-[0.2em] text-foreground"
-        style={{ fontFamily: "var(--font-heading)" }}
-      >
-       connect
-      </h1>
+      <div className="flex items-center">
+        <img src="/logo.png" alt="Connect Logo" className="h-10 object-contain invert dark:invert-0" />
+      </div>
 
       <div className="flex items-center gap-4">
         {/* <button

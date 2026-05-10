@@ -3,9 +3,8 @@ import { Ride } from "../../../domain/entities/Ride/ride.entities";
 import { RideModel } from "../../schema/rideSchema";
 import { BaseRepository } from "../BaseRepository/BaseRepository";
 
-
 export class RideRepository extends BaseRepository<Ride> implements IRideRepository {
-   constructor() {
+  constructor() {
     super(RideModel);
   }
   async create(ride: Omit<Ride, "_id" | "createdAt" | "updatedAt">): Promise<Ride> {

@@ -11,7 +11,6 @@ interface GoogleUser {
   role: string;
 }
 
-
-export interface IGoogleLoginUsecase{
-  execute(accessToken: string):Promise<GoogleLoginResponse>
+export interface IGoogleLoginUsecase {
+  execute(accessToken: string): Promise<GoogleLoginResponse>;
 }

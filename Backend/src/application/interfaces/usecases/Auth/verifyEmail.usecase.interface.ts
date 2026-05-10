@@ -1,4 +1,3 @@
-
-export interface IVerifyEmailUsecase{
-   execute(email: string): Promise<void>
+export interface IVerifyEmailUsecase {
+  execute(email: string): Promise<void>;
 }

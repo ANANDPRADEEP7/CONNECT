@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import { HttpStatus } from "../constants/HttpStatus";
 import { ResponseMessage } from "../../domain/enums/ResponseMessage.enum";
 
-
 export class AppError extends Error {
   public readonly statusCode: number;
   public readonly isOperational: boolean;
@@ -16,12 +15,7 @@ export class AppError extends Error {
   }
 }
 
-export const errorHandler = (
-  err: any,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   const statusCode = err.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
   const message = err.message || ResponseMessage.INTERNAL_SERVER_ERROR;
 

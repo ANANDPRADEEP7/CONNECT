@@ -8,28 +8,28 @@ import { NodemailerService } from "../services/NodemailerService";
  * Following Dependency Inversion Principle
  */
 export class EmailContainer {
-    private static instance: EmailContainer;
-    private emailService: EmailService;
+  private static instance: EmailContainer;
+  private emailService: EmailService;
 
-    private constructor() {
-        // Infrastructure dependency
-        const nodemailerService: IEmailService = new NodemailerService();
+  private constructor() {
+    // Infrastructure dependency
+    const nodemailerService: IEmailService = new NodemailerService();
 
-        // Application service with injected dependency
-        this.emailService = new EmailService(nodemailerService);
+    // Application service with injected dependency
+    this.emailService = new EmailService(nodemailerService);
+  }
+
+  public static getInstance(): EmailContainer {
+    if (!EmailContainer.instance) {
+      EmailContainer.instance = new EmailContainer();
     }
+    return EmailContainer.instance;
+  }
 
-    public static getInstance(): EmailContainer {
-        if (!EmailContainer.instance) {
-            EmailContainer.instance = new EmailContainer();
-        }
-        return EmailContainer.instance;
-    }
-
-    /**
-     * Get the email service instance
-     */
-    public getEmailService(): EmailService {
-        return this.emailService;
-    }
+  /**
+   * Get the email service instance
+   */
+  public getEmailService(): EmailService {
+    return this.emailService;
+  }
 }

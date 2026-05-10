@@ -1,4 +1,3 @@
-
 export interface IResendOtpusecase {
-  execute(email: string): Promise<{ message: string }>
+  execute(email: string): Promise<{ message: string }>;
 }

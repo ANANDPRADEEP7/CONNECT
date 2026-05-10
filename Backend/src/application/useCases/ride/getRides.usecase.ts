@@ -6,7 +6,6 @@ import {
   IGetRidesUseCase,
 } from "../../interfaces/usecases/Rider/getRides.usecase.interface";
 
-
 export class GetRidesUseCase implements IGetRidesUseCase {
   constructor(private readonly rideRepository: IRideRepository) {}
 

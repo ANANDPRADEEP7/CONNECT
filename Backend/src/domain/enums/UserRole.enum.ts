@@ -4,7 +4,7 @@
  * Keeps role values in one place so they never get out of sync.
  */
 export enum UserRole {
-  USER  = "user",
+  USER = "user",
   RIDER = "rider",
   ADMIN = "admin",
 }
@@ -14,8 +14,8 @@ export enum UserRole {
  * Lifecycle states for a rider's verification/approval.
  */
 export enum RiderStatus {
-  NONE     = "none",
-  PENDING  = "pending",
-  ACTIVE   = "active",
+  NONE = "none",
+  PENDING = "pending",
+  ACTIVE = "active",
   DECLINED = "declined",
 }

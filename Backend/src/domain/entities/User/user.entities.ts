@@ -11,7 +11,7 @@ export interface User {
   isVerified?: boolean;
   isRiderActive?: string; // "none" | "pending" | "active" | "declined"
   bio?: string;
-  govId?: string;        // Stored as URL path, e.g. /uploads/filename.jpg
+  govId?: string; // Stored as URL path, e.g. /uploads/filename.jpg
   vehicleImage?: string;
   pucImage?: string;
   rcImage?: string;

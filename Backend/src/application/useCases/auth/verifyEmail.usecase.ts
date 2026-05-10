@@ -2,21 +2,20 @@ import { IUserRepository } from "../../interfaces/repositories/User/IUserReposit
 import { IEmailService } from "../../../domain/interfaces/IEmailService";
 import { ITokenService } from "../../../domain/interfaces/ITokenService";
 import { ICacheService } from "../../../domain/interfaces/ICacheService";
-import { IVerifyEmailUsecase } from "../../interfaces/usecases/Auth/verifyEmail.usecase.interface";
 
-const CLIENT_URL = process.env.FRONTEND_URL;
+const CLIENT_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 /**
  * VerifyEmailUsecase
  * Sends a password-reset link to the user's email address.
  */
-export class VerifyEmailUsecase implements IVerifyEmailUsecase {
+export class VerifyEmailUsecase {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly emailService: IEmailService,
     private readonly tokenService: ITokenService,
-    private readonly cacheService: ICacheService
-  ) { }
+    private readonly cacheService: ICacheService,
+  ) {}
 
   async execute(email: string): Promise<void> {
     const user = await this.userRepository.findByEmailFromDB(email);

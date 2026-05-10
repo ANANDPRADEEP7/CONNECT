@@ -1,4 +1,3 @@
-
 export interface ToggleBlockUserResponse {
   message: string;
   isBlocked: boolean;

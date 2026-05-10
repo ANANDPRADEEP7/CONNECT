@@ -34,8 +34,7 @@ const OtpSchema = new Schema<OtpDocument>(
       expires: 300, // ⏱️ auto delete after 5 minutes
     },
   },
-  { timestamps: false }
+  { timestamps: false },
 );
 
-export const OtpModel: Model<OtpDocument> =
-  mongoose.model<OtpDocument>("Otp", OtpSchema);
+export const OtpModel: Model<OtpDocument> = mongoose.model<OtpDocument>("Otp", OtpSchema);

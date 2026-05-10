@@ -1,4 +1,3 @@
-
 import { IUserRepository } from "../../interfaces/repositories/User/IUserRepository";
 import {
   IUpdateProfileUseCase,
@@ -9,11 +8,7 @@ import {
 export class UpdateProfileUseCase implements IUpdateProfileUseCase {
   constructor(private readonly userRepository: IUserRepository) {}
 
-  async execute(
-    userId: string,
-    profileData: UpdateProfileRequest
-  ): Promise<UpdateProfileResponse> {
-
+  async execute(userId: string, profileData: UpdateProfileRequest): Promise<UpdateProfileResponse> {
     const dataToUpdate = {
       ...profileData,
       isRiderActive: "pending",

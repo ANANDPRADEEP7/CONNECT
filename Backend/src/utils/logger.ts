@@ -1,4 +1,4 @@
-import winston from 'winston';
+import winston from "winston";
 
 // Define log levels
 const levels = {
@@ -11,11 +11,11 @@ const levels = {
 
 // Define colors for each level
 const colors = {
-  error: 'red',
-  warn: 'yellow',
-  info: 'green',
-  http: 'magenta',
-  debug: 'white',
+  error: "red",
+  warn: "yellow",
+  info: "green",
+  http: "magenta",
+  debug: "white",
 };
 
 // Tell winston that you want to link the colors
@@ -23,47 +23,36 @@ winston.addColors(colors);
 
 // Define which level to log based on environment
 const level = () => {
-  const env = process.env.NODE_ENV || 'development';
-  const isDevelopment = env === 'development';
-  return isDevelopment ? 'debug' : 'warn';
+  const env = process.env.NODE_ENV || "development";
+  const isDevelopment = env === "development";
+  return isDevelopment ? "debug" : "warn";
 };
 
 // Define format for logs
 const format = winston.format.combine(
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
+  winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss:ms" }),
   winston.format.colorize({ all: true }),
-  winston.format.printf(
-    (info) => `${info.timestamp} ${info.level}: ${info.message}`,
-  ),
+  winston.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`),
 );
 
 // Define transports
 const transports = [
   // Console transport
   new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    )
+    format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
   }),
-  
+
   // File transport for errors
   new winston.transports.File({
-    filename: 'logs/error.log',
-    level: 'error',
-    format: winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.json()
-    )
+    filename: "logs/error.log",
+    level: "error",
+    format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
   }),
-  
+
   // File transport for all logs
   new winston.transports.File({
-    filename: 'logs/combined.log',
-    format: winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.json()
-    )
+    filename: "logs/combined.log",
+    format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
   }),
 ];
 
@@ -77,8 +66,8 @@ const logger = winston.createLogger({
 });
 
 // Create logs directory if it doesn't exist
-import { existsSync, mkdirSync } from 'fs';
-const logDir = 'logs';
+import { existsSync, mkdirSync } from "fs";
+const logDir = "logs";
 if (!existsSync(logDir)) {
   mkdirSync(logDir);
 }

@@ -1,8 +1,8 @@
 import { ICacheService } from "../../domain/interfaces/ICacheService";
 
 interface CacheEntry {
-    token: string;
-    expiresAt: number;
+  token: string;
+  expiresAt: number;
 }
 
 /**
@@ -11,28 +11,28 @@ interface CacheEntry {
  * (For production, replace with Redis implementation)
  */
 export class InMemoryCacheService implements ICacheService {
-    private store = new Map<string, CacheEntry>();
+  private store = new Map<string, CacheEntry>();
 
-    async storeResetToken(userId: string, token: string, ttlSeconds: number): Promise<void> {
-        this.store.set(userId, {
-            token,
-            expiresAt: Date.now() + ttlSeconds * 1000,
-        });
+  async storeResetToken(userId: string, token: string, ttlSeconds: number): Promise<void> {
+    this.store.set(userId, {
+      token,
+      expiresAt: Date.now() + ttlSeconds * 1000,
+    });
+  }
+
+  async getResetToken(userId: string): Promise<string | null> {
+    const entry = this.store.get(userId);
+    if (!entry) return null;
+
+    if (Date.now() > entry.expiresAt) {
+      this.store.delete(userId);
+      return null;
     }
 
-    async getResetToken(userId: string): Promise<string | null> {
-        const entry = this.store.get(userId);
-        if (!entry) return null;
+    return entry.token;
+  }
 
-        if (Date.now() > entry.expiresAt) {
-            this.store.delete(userId);
-            return null;
-        }
-
-        return entry.token;
-    }
-
-    async delete(userId: string): Promise<void> {
-        this.store.delete(userId);
-    }
+  async delete(userId: string): Promise<void> {
+    this.store.delete(userId);
+  }
 }

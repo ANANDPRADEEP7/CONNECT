@@ -1,6 +1,6 @@
-import winston from 'winston';
-import { existsSync, mkdirSync } from 'fs';
-import { ILogger } from '../../domain/interfaces/ILogger';
+import winston from "winston";
+import { existsSync, mkdirSync } from "fs";
+import { ILogger } from "../../domain/interfaces/ILogger";
 
 /**
  * Winston Logger Implementation - Infrastructure layer
@@ -25,11 +25,11 @@ export class WinstonLogger implements ILogger {
 
     // Define colors for each level
     const colors = {
-      error: 'red',
-      warn: 'yellow',
-      info: 'green',
-      http: 'magenta',
-      debug: 'white',
+      error: "red",
+      warn: "yellow",
+      info: "green",
+      http: "magenta",
+      debug: "white",
     };
 
     // Tell winston that you want to link the colors
@@ -37,52 +37,41 @@ export class WinstonLogger implements ILogger {
 
     // Define which level to log based on environment
     const level = () => {
-      const env = process.env.NODE_ENV || 'development';
-      const isDevelopment = env === 'development';
-      return isDevelopment ? 'debug' : 'warn';
+      const env = process.env.NODE_ENV || "development";
+      const isDevelopment = env === "development";
+      return isDevelopment ? "debug" : "warn";
     };
 
     // Define format for logs
     const format = winston.format.combine(
-      winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
+      winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss:ms" }),
       winston.format.colorize({ all: true }),
-      winston.format.printf(
-        (info) => `${info.timestamp} ${info.level}: ${info.message}`,
-      ),
+      winston.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`),
     );
 
     // Define transports
     const transports = [
       // Console transport
       new winston.transports.Console({
-        format: winston.format.combine(
-          winston.format.colorize(),
-          winston.format.simple()
-        )
+        format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
       }),
-      
+
       // File transport for errors
       new winston.transports.File({
-        filename: 'logs/error.log',
-        level: 'error',
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.json()
-        )
+        filename: "logs/error.log",
+        level: "error",
+        format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
       }),
-      
+
       // File transport for all logs
       new winston.transports.File({
-        filename: 'logs/combined.log',
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.json()
-        )
+        filename: "logs/combined.log",
+        format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
       }),
     ];
 
     // Create logs directory if it doesn't exist
-    const logDir = 'logs';
+    const logDir = "logs";
     if (!existsSync(logDir)) {
       mkdirSync(logDir);
     }

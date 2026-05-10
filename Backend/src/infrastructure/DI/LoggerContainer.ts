@@ -2,7 +2,6 @@ import { LoggerService } from "../../application/services/LoggerService";
 import { ILogger } from "../../domain/interfaces/ILogger";
 import { WinstonLogger } from "../logging/WinstonLogger";
 
-
 /**
  * Dependency Injection Container for Logger
  * Manages the lifecycle and dependencies of logger instances
@@ -15,7 +14,7 @@ export class LoggerContainer {
   private constructor() {
     // Infrastructure dependency
     const winstonLogger: ILogger = new WinstonLogger();
-    
+
     // Application service with injected dependency
     this.loggerService = new LoggerService(winstonLogger);
   }

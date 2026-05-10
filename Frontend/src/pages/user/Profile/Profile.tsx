@@ -12,6 +12,33 @@ import CollapsibleSection from "../../../components1/user/Profile/CollapsibleSec
 import FileUploadField from "../../../components1/user/Profile/FileUploadField";
 import { userApi } from "../../../Endpoints/Api/user/userApi";
 
+// ─── Cloudinary Direct Upload Helper ─────────────────────────────────────────
+const CLOUD_NAME   = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME   as string;
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET as string;
+
+/**
+ * Uploads a single File to Cloudinary using an unsigned upload preset.
+ * Returns the secure_url of the uploaded asset.
+ */
+async function uploadToCloudinary(file: File): Promise<string> {
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("upload_preset", UPLOAD_PRESET);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`,
+    { method: "POST", body: fd }
+  );
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as any)?.error?.message || "Cloudinary upload failed");
+  }
+
+  const json = await res.json();
+  return json.secure_url as string;
+}
+
 // ─── Zod Validation Schema ────────────────────────────────────────────────────
 const profileSchema = z.object({
   bio: z
@@ -83,31 +110,35 @@ const Profile = () => {
   // Called when the form passes validation
   const onSubmit = async (data: ProfileFormData) => {
     try {
-      // Build FormData to send files + text fields together
-      const formData = new FormData();
-
-      // Enforce that we successfully decoded a userId
       if (!currentUser._id) {
         toast.error("User context lost, please login again.");
         return;
       }
 
-      formData.append("userId", currentUser._id);
-      formData.append("bio", data.bio);
+      // ── Step 1: Upload each file to Cloudinary in parallel ──────────────────
+      toast.info("Uploading documents… please wait.");
 
-      // Only append files that were actually selected
-      if (data.govId instanceof File) formData.append("govId", data.govId);
-      if (data.vehicleImage instanceof File) formData.append("vehicleImage", data.vehicleImage);
-      if (data.pucImage instanceof File) formData.append("pucImage", data.pucImage);
-      if (data.rcImage instanceof File) formData.append("rcImage", data.rcImage);
+      const [govIdUrl, vehicleImageUrl, pucImageUrl, rcImageUrl] = await Promise.all([
+        data.govId        instanceof File ? uploadToCloudinary(data.govId)        : Promise.resolve(undefined),
+        data.vehicleImage instanceof File ? uploadToCloudinary(data.vehicleImage) : Promise.resolve(undefined),
+        data.pucImage     instanceof File ? uploadToCloudinary(data.pucImage)     : Promise.resolve(undefined),
+        data.rcImage      instanceof File ? uploadToCloudinary(data.rcImage)      : Promise.resolve(undefined),
+      ]);
 
-      // POST multipart/form-data → /user/profile
-      await userApi.UpdateProfile(formData);
+      // ── Step 2: POST JSON with Cloudinary URLs → /user/profile ──────────────
+      await userApi.UpdateProfile({
+        userId:       currentUser._id,
+        bio:          data.bio,
+        ...(govIdUrl        && { govId:        govIdUrl }),
+        ...(vehicleImageUrl && { vehicleImage: vehicleImageUrl }),
+        ...(pucImageUrl     && { pucImage:     pucImageUrl }),
+        ...(rcImageUrl      && { rcImage:      rcImageUrl }),
+      });
 
       toast.success("Profile submitted! Status is pending review.");
       navigate("/home");
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to submit profile. Please try again.");
+      toast.error(error?.response?.data?.message || error?.message || "Failed to submit profile. Please try again.");
     }
   };
 

@@ -1,4 +1,4 @@
- interface AdminLoginResponse {
+interface AdminLoginResponse {
   message: string;
   token: string;
   admin: Admin;
@@ -10,8 +10,7 @@ interface Admin {
   email: string;
   role: string;
 }
- 
- 
- export interface IAdminLoginUseCase{
-  execute(email: string, password: string):Promise<AdminLoginResponse>
- }
+
+export interface IAdminLoginUseCase {
+  execute(email: string, password: string): Promise<AdminLoginResponse>;
+}

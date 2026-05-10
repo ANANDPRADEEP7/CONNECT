@@ -47,14 +47,17 @@ export const userApi = {
   },
 
   // POST /user/profile
-  // Sends multipart/form-data with bio, userId, and up to 4 document files.
-  // Backend saves files to disk via Multer and stores URL paths in MongoDB.
-  UpdateProfile: async (data: FormData): Promise<{ message: string }> => {
-    const response = await api.post("/user/profile", data, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+  // Sends JSON body with bio, userId, and Cloudinary secure_url strings.
+  // Files are uploaded directly to Cloudinary on the frontend before calling this.
+  UpdateProfile: async (data: {
+    userId: string;
+    bio: string;
+    govId?: string;
+    vehicleImage?: string;
+    pucImage?: string;
+    rcImage?: string;
+  }): Promise<{ message: string }> => {
+    const response = await api.post("/user/profile", data);
     return response.data;
   },
   GetUserDetails: async (userId: string) => {

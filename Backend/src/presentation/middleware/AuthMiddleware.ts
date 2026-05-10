@@ -30,7 +30,9 @@ export const authenticateAdmin = (tokenService: ITokenService) => {
     const token = req.cookies.adminToken;
 
     if (!token) {
-      return res.status(HttpStatus.UNAUTHORIZED).json({ message: "No admin token, authorization denied" });
+      return res
+        .status(HttpStatus.UNAUTHORIZED)
+        .json({ message: "No admin token, authorization denied" });
     }
 
     const decoded = tokenService.verifyToken(token);

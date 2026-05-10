@@ -1,5 +1,3 @@
-
-
 import { IRideRepository } from "../../interfaces/repositories/Ride/IRideRepository";
 import {
   CreateRideRequest,
@@ -10,11 +8,7 @@ import {
 export class CreateRideUseCase implements ICreateRideUseCase {
   constructor(private readonly rideRepository: IRideRepository) {}
 
-  async execute(
-    riderId: string,
-    data: CreateRideRequest
-  ): Promise<CreateRideResponse> {
-
+  async execute(riderId: string, data: CreateRideRequest): Promise<CreateRideResponse> {
     if (!data.from || !data.to) {
       throw new Error("Starting location and destination are required.");
     }

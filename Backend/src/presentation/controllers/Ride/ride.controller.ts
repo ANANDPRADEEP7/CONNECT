@@ -6,44 +6,26 @@ import { ICreateRideUseCase } from "../../../application/interfaces/usecases/Rid
 import { IGetRidesUseCase } from "../../../application/interfaces/usecases/Rider/getRides.usecase.interface";
 import { IGetMyRidesUseCase } from "../../../application/interfaces/usecases/Rider/getMyRides.usecase.interface";
 
-
 export class RideController {
   constructor(
     private readonly createRideUseCase: ICreateRideUseCase,
     private readonly getRidesUseCase: IGetRidesUseCase,
-    private readonly getMyRidesUseCase: IGetMyRidesUseCase
+    private readonly getMyRidesUseCase: IGetMyRidesUseCase,
   ) {}
 
+  createRide = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const riderId = req.user?.id;
 
-createRide = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const riderId = req.user?.id;
-
-    if (!riderId) {
-      return res
-        .status(HttpStatus.UNAUTHORIZED)
-        .json({
+      if (!riderId) {
+        return res.status(HttpStatus.UNAUTHORIZED).json({
           message: ResponseMessage.AUTH_REQUIRED,
         });
-    }
+      }
 
-    const {
-      from,
-      to,
-      date,
-      time,
-      seats,
-      pricePerSeat,
-      description,
-    } = req.body;
+      const { from, to, date, time, seats, pricePerSeat, description } = req.body;
 
-    const response = await this.createRideUseCase.execute(
-      riderId,
-      {
+      const response = await this.createRideUseCase.execute(riderId, {
         from,
         to,
         date,
@@ -51,17 +33,13 @@ createRide = async (
         seats: Number(seats),
         pricePerSeat: Number(pricePerSeat),
         description,
-      }
-    );
+      });
 
-    return res
-      .status(HttpStatus.CREATED)
-      .json(response);
-
-  } catch (error) {
-    next(error);
-  }
-};
+      return res.status(HttpStatus.CREATED).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
 
   /** GET /ride – Get all active rides */
   getAllRides = async (_req: AuthRequest, res: Response, next: NextFunction) => {

@@ -1,6 +1,5 @@
 import { ILogger } from "../../domain/interfaces/ILogger";
 
-
 /**
  * Logger Service - Application layer
  * Provides logging functionality to the application layer
@@ -69,9 +68,9 @@ export class LoggerService {
    * Log error with context
    */
   logError(error: Error, context?: string, meta?: any): void {
-    this.error(`${context ? context + ': ' : ''}${error.message}`, {
+    this.error(`${context ? context + ": " : ""}${error.message}`, {
       stack: error.stack,
-      ...meta
+      ...meta,
     });
   }
 }

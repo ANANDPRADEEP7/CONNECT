@@ -1,12 +1,9 @@
-
 import { IRideRepository } from "../../interfaces/repositories/Ride/IRideRepository";
 import {
   GetMyRidesResponse,
   IGetMyRidesUseCase,
 } from "../../interfaces/usecases/Rider/getMyRides.usecase.interface";
 
-
- 
 export class GetMyRidesUseCase implements IGetMyRidesUseCase {
   constructor(private readonly rideRepository: IRideRepository) {}
 

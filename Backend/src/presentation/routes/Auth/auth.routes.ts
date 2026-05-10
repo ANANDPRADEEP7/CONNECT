@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import { AppContainer } from "../../../infrastructure/DI/AppContainer";
 import { authenticateUser } from "../../middleware/AuthMiddleware";
@@ -15,6 +14,8 @@ router.post("/verify-email", (req, res, next) => authController.verifyEmail(req,
 router.put("/reset-password", (req, res, next) => authController.resetPassword(req, res, next));
 router.post("/google-login", (req, res, next) => authController.googleLogin(req, res, next));
 router.post("/logout", (req, res, next) => authController.logout(req, res, next));
-router.get("/me", authenticateUser(tokenService), (req, res, next) => authController.me(req as any, res, next));
+router.get("/me", authenticateUser(tokenService), (req, res, next) =>
+  authController.me(req as any, res, next),
+);
 
 export default router;

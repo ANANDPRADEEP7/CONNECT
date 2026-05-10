@@ -1,4 +1,4 @@
- export interface User {
+export interface User {
   id: string;
   name: string;
   email: string;
@@ -6,8 +6,7 @@
   isRiderActive: string | undefined;
   isBlocked: boolean;
 }
- 
- 
- export interface IGetUserDetailsUseCase{
-  execute(userId: string):Promise<User>
- }
+
+export interface IGetUserDetailsUseCase {
+  execute(userId: string): Promise<User>;
+}

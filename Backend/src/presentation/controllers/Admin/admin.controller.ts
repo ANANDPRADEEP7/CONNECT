@@ -16,7 +16,7 @@ export class AdminController {
     private readonly toggleBlockUserUseCase: IToggleBlockUserUseCase,
     private readonly getAllRidersUseCase: IGetAllRidersUseCase,
     private readonly updateRiderStatusUseCase: IUpdateRiderStatusUseCase,
-    private readonly getUserDetailsUseCase: IGetUserDetailsUseCase
+    private readonly getUserDetailsUseCase: IGetUserDetailsUseCase,
   ) {}
 
   login = async (req: Request, res: Response, next: NextFunction) => {
@@ -58,7 +58,9 @@ export class AdminController {
 
   getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const users = await this.getAllUsersUseCase.execute();
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const users = await this.getAllUsersUseCase.execute(page, limit);
       return res.status(HttpStatus.OK).json(users);
     } catch (error) {
       next(error);
@@ -77,7 +79,9 @@ export class AdminController {
 
   getAllRiders = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const riders = await this.getAllRidersUseCase.execute();
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const riders = await this.getAllRidersUseCase.execute(page, limit);
       return res.status(HttpStatus.OK).json(riders);
     } catch (error) {
       next(error);

@@ -1,13 +1,8 @@
-
-
 export interface OtpData {
-   name: string;
+  name: string;
   email: string;
   phonenumber: string;
   password: string;
   otp: string;
   createdAt: Date;
 }
-
-
-

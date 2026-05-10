@@ -1,8 +1,13 @@
 import { useState, useEffect } from "react";
-
 import { Shield, ShieldOff } from "lucide-react";
 import { toast } from "react-toastify";
 import { adminApi } from "../../../Endpoints/Api/Admin/adminApi";
+import {
+  DataTable,
+  UserAvatar,
+  ManagementHeader,
+  type ColumnDef,
+} from "../../../components1/common/table";
 
 interface UserItem {
   id: string;
@@ -16,21 +21,26 @@ interface UserItem {
 const UserManagement = () => {
   const [users, setUsers] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 10;
 
   useEffect(() => {
     const fetchUsers = async () => {
+      setLoading(true);
       try {
-        const data = await adminApi.getUsers();
-        setUsers(data);
-      } catch (error: any) {
-        toast.error(error.response?.data?.message || "Failed to fetch users");
+        const response = await adminApi.getUsers(page, limit);
+        setUsers(response.data);
+        setTotalPages(response.totalPages || 1);
+      } catch (error: unknown) {
+        const err = error as { response?: { data?: { message?: string } } };
+        toast.error(err.response?.data?.message || "Failed to fetch users");
       } finally {
         setLoading(false);
       }
     };
-
     fetchUsers();
-  }, []);
+  }, [page]);
 
   const toggleBlock = async (id: string) => {
     try {
@@ -44,75 +54,119 @@ const UserManagement = () => {
           return u;
         })
       );
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to toggle block status");
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(
+        err.response?.data?.message || "Failed to toggle block status"
+      );
     }
   };
 
+  // ─── Column Definitions ────────────────────────────────────────────────────
+
+  const columns: ColumnDef<UserItem>[] = [
+    {
+      key: "user",
+      render: (user) => (
+        <UserAvatar
+          name={user.name}
+          badge={
+            user.verified ? (
+              <svg
+                className="w-4 h-4 text-blue-500"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+              </svg>
+            ) : undefined
+          }
+        />
+      ),
+    },
+    {
+      key: "email",
+      render: (user) => (
+        <span className="text-sm text-muted-foreground hidden sm:block">
+          {user.email}
+        </span>
+      ),
+    },
+    {
+      key: "phone",
+      render: (user) => (
+        <span className="text-sm text-muted-foreground hidden md:block">
+          {user.phone}
+        </span>
+      ),
+    },
+  ];
+
+  // ─── Row Actions ───────────────────────────────────────────────────────────
+
+  const rowActions = (user: UserItem) => (
+    <button
+      onClick={() => toggleBlock(user.id)}
+      className={`px-6 py-2 rounded-full text-xs tracking-[0.15em] font-semibold border transition-colors flex items-center gap-2 ${
+        user.blocked
+          ? "bg-muted text-foreground border-border hover:bg-accent"
+          : "bg-primary text-primary-foreground border-transparent hover:opacity-90"
+      }`}
+    >
+      {user.blocked ? (
+        <>
+          <ShieldOff size={14} /> UNBLOCK
+        </>
+      ) : (
+        <>
+          <Shield size={14} /> BLOCK
+        </>
+      )}
+    </button>
+  );
+
+  // ─── Render ────────────────────────────────────────────────────────────────
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2
-          className="text-xl tracking-[0.15em] font-bold text-foreground"
-          style={{ fontFamily: "var(--font-heading)" }}
-        >
-          USER MANAGEMENT
-        </h2>
+      <ManagementHeader title="USER MANAGEMENT">
         <button className="px-6 py-2.5 rounded-full bg-blue-500 text-xs tracking-[0.15em] font-semibold text-white hover:bg-blue-600 transition-colors">
           VERIFY REQUEST
         </button>
-      </div>
+      </ManagementHeader>
 
-      <div className="space-y-3">
-        {loading && <div className="text-center py-10 text-muted-foreground">Loading users...</div>}
-        {!loading && users.length === 0 && (
-          <div className="text-center py-10 text-muted-foreground">No users found.</div>
-        )}
-        {users.map((user) => (
-          <div
-            key={user.id}
-            className="flex items-center justify-between bg-card border border-border rounded-xl px-6 py-4"
+      <DataTable
+        data={users}
+        columns={columns}
+        rowKey={(u) => u.id}
+        loading={loading}
+        loadingText="Loading users..."
+        emptyText="No users found."
+        rowActions={rowActions}
+      />
+      
+      {/* Pagination Controls */}
+      {!loading && (
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <button
+            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            disabled={page === 1}
+            className="px-4 py-2 border border-border rounded-full text-xs font-semibold disabled:opacity-50 hover:bg-accent transition-colors"
           >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center border-2 border-blue-500/50">
-                <span className="text-sm font-semibold text-foreground">
-                  {user.name.charAt(0)}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-sm font-medium text-foreground">{user.name}</span>
-                {user.verified && (
-                  <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                  </svg>
-                )}
-              </div>
-            </div>
-
-            <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
-            <span className="text-sm text-muted-foreground hidden md:block">{user.phone}</span>
-
-            <button
-              onClick={() => toggleBlock(user.id)}
-              className={`px-6 py-2 rounded-full text-xs tracking-[0.15em] font-semibold border transition-colors flex items-center gap-2 ${
-                user.blocked
-                  ? "bg-muted text-foreground border-border hover:bg-accent"
-                  : "bg-primary text-primary-foreground border-transparent hover:opacity-90"
-              }`}
-            >
-              {user.blocked ? (
-                <>
-                  <ShieldOff size={14} /> UNBLOCK
-                </>
-              ) : (
-                <>
-                  <Shield size={14} /> BLOCK
-                </>
-              )}
-            </button>
-          </div>
-        ))}
-      </div>
+            PREVIOUS
+          </button>
+          <span className="text-xs text-muted-foreground font-semibold">
+            PAGE {page} OF {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={page >= totalPages}
+            className="px-4 py-2 border border-border rounded-full text-xs font-semibold disabled:opacity-50 hover:bg-accent transition-colors"
+          >
+            NEXT
+          </button>
+        </div>
+      )}
     </div>
   );
 };

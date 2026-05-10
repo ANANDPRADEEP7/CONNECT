@@ -15,10 +15,7 @@ import { IGetUserDetailsUseCase } from "../../../application/interfaces/usecases
 const loggerContainer = LoggerContainer.getInstance();
 const loggerService = loggerContainer.getLoggerService();
 
-
-type SignupResult =
-  | { user: { _id: string } }
-  | { message: string };
+type SignupResult = { user: { _id: string } } | { message: string };
 
 export class UserController {
   constructor(
@@ -29,30 +26,23 @@ export class UserController {
     private readonly verifyEmailUsecase: IVerifyEmailUsecase,
     private readonly resetPasswordUsecase: IResetPasswordUsecase,
     private readonly googleLoginUsecase: IGoogleLoginUsecase,
-    private readonly getUserDetailsUseCase: IGetUserDetailsUseCase 
-  ) { }
+    private readonly getUserDetailsUseCase: IGetUserDetailsUseCase,
+  ) {}
 
   register = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { email } = req.body;
-      console.log(req.body);
 
       loggerService.logUserAction("Registration attempt", undefined, { email });
-   
+
       const result = (await this.signupUsecase.execute(req.body)) as SignupResult;
 
       if ("user" in result) {
-        loggerService.logUserAction(
-          "Registration successful",
-          result.user._id,
-          { email }
-        );
+        loggerService.logUserAction("Registration successful", result.user._id, { email });
       } else {
-        loggerService.logUserAction(
-          "Registration completed (no user returned)",
-          undefined,
-          { email }
-        );
+        loggerService.logUserAction("Registration completed (no user returned)", undefined, {
+          email,
+        });
       }
 
       return res.status(HttpStatus.CREATED).json(result);
@@ -103,9 +93,7 @@ export class UserController {
   logout = async (req: Request, res: Response, next: NextFunction) => {
     try {
       res.clearCookie("token");
-      return res
-        .status(HttpStatus.OK)
-        .json({ message: ResponseMessage.LOGOUT_SUCCESS });
+      return res.status(HttpStatus.OK).json({ message: ResponseMessage.LOGOUT_SUCCESS });
     } catch (error) {
       next(error);
     }

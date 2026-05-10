@@ -8,4 +8,3 @@ export interface IRideRepository extends IBaseRepository<Ride> {
   updateStatus(id: string, status: Ride["status"]): Promise<void>;
   delete(id: string): Promise<void>;
 }
-

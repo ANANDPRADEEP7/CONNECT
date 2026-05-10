@@ -53,7 +53,7 @@ const UserSchema = new Schema(
       type: String,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const UserModel: Model<UserDocument> = mongoose.model<UserDocument>("User", UserSchema);

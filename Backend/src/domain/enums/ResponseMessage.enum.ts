@@ -16,13 +16,13 @@ export enum ResponseMessage {
   // Profile
   PROFILE_UPDATE_SUCCESS = "Profile updated successfully.",
   PROFILE_PENDING_REVIEW = "Profile updated successfully. Status set to pending review.",
-  
+
   // Admin
   RIDER_APPROVED = "Rider approved successfully",
   RIDER_REJECTED = "Rider rejected successfully",
   RIDER_NOT_FOUND = "Rider not found",
   ADMIN_LOGIN_SUCCESS = "Admin login successful",
-  
+
   // General
   INTERNAL_SERVER_ERROR = "Internal Server Error",
   ROUTE_NOT_FOUND = "Route not found",
