@@ -16,5 +16,10 @@ export interface PaginatedUsersResponse {
 }
 
 export interface IGetAllUsersUseCase {
-  execute(page?: number, limit?: number): Promise<PaginatedUsersResponse>;
+  execute(
+    page: number,
+    limit: number,
+    search?: string,
+    filter?: string,
+  ): Promise<PaginatedUsersResponse>;
 }

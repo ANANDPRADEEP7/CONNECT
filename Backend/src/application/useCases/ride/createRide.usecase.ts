@@ -4,9 +4,10 @@ import {
   CreateRideResponse,
   ICreateRideUseCase,
 } from "../../interfaces/usecases/Rider/createRide.usecase.interface";
+import { RideMapper } from "../../mappers/Ride/RideMapper";
 
 export class CreateRideUseCase implements ICreateRideUseCase {
-  constructor(private readonly rideRepository: IRideRepository) {}
+  constructor(private readonly _rideRepository: IRideRepository) {}
 
   async execute(riderId: string, data: CreateRideRequest): Promise<CreateRideResponse> {
     if (!data.from || !data.to) {
@@ -25,7 +26,7 @@ export class CreateRideUseCase implements ICreateRideUseCase {
       throw new Error("Price per seat cannot be negative.");
     }
 
-    const ride = await this.rideRepository.create({
+    const ride = await this._rideRepository.create({
       riderId,
       from: data.from.trim(),
       to: data.to.trim(),
@@ -39,20 +40,7 @@ export class CreateRideUseCase implements ICreateRideUseCase {
 
     return {
       message: "Ride posted successfully!",
-      ride: {
-        id: ride._id.toString(),
-        riderId: ride.riderId.toString(),
-        from: ride.from,
-        to: ride.to,
-        date: ride.date,
-        time: ride.time,
-        seats: ride.seats,
-        pricePerSeat: ride.pricePerSeat,
-        description: ride.description,
-        status: ride.status,
-        createdAt: ride.createdAt,
-        updatedAt: ride.updatedAt,
-      },
+      ride: RideMapper.toRideDTO(ride),
     };
   }
 }

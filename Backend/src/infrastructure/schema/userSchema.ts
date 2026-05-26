@@ -1,5 +1,6 @@
 import mongoose, { HydratedDocument, Model, Schema } from "mongoose";
 import { User } from "../../domain/entities/User/user.entities";
+import { UserRole, RiderStatus } from "../../domain/enums/UserRole.enum";
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -14,8 +15,8 @@ const UserSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ["user", "rider", "admin"],
-      default: "user",
+      enum: Object.values(UserRole),
+      default: UserRole.USER,
     },
     phonenumber: {
       type: String,
@@ -33,13 +34,12 @@ const UserSchema = new Schema(
     },
     isRiderActive: {
       type: String,
-      enum: ["active", "pending", "declined", "none"],
-      default: "none",
+      enum: Object.values(RiderStatus),
+      default: RiderStatus.NONE,
     },
     bio: {
       type: String,
     },
-    // File URL paths stored as strings, e.g. /uploads/1234567890-abc.jpg
     govId: {
       type: String,
     },
@@ -51,6 +51,10 @@ const UserSchema = new Schema(
     },
     rcImage: {
       type: String,
+    },
+    rejectionReason: {
+      type: String,
+      default: null,
     },
   },
   { timestamps: true },

@@ -1,3 +1,5 @@
+import { RiderStatus } from "../../../../domain/enums/UserRole.enum";
+
 export interface UpdateProfileRequest {
   bio?: string;
   govId?: string;
@@ -8,7 +10,7 @@ export interface UpdateProfileRequest {
 
 export interface UpdateProfileResponse {
   message: string;
-  isRiderActive: "pending";
+  isRiderActive: RiderStatus.PENDING;
 }
 
 export interface IUpdateProfileUseCase {

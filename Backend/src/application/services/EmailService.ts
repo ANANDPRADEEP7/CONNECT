@@ -6,13 +6,13 @@ import { IEmailService } from "../../domain/interfaces/IEmailService";
  * Depends on abstraction (IEmailService) not concrete implementation
  */
 export class EmailService {
-  constructor(private emailService: IEmailService) {}
+  constructor(private _emailService: IEmailService) {}
 
   /**
    * Send a raw email
    */
   async sendMail(to: string, subject: string, html: string): Promise<void> {
-    await this.emailService.sendMail(to, subject, html);
+    await this._emailService.sendMail(to, subject, html);
   }
 
   /**
@@ -33,6 +33,6 @@ export class EmailService {
       </div>
     `;
 
-    await this.emailService.sendMail(email, subject, html);
+    await this._emailService.sendMail(email, subject, html);
   }
 }

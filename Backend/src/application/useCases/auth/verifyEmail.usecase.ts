@@ -5,20 +5,16 @@ import { ICacheService } from "../../../domain/interfaces/ICacheService";
 
 const CLIENT_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
-/**
- * VerifyEmailUsecase
- * Sends a password-reset link to the user's email address.
- */
 export class VerifyEmailUsecase {
   constructor(
-    private readonly userRepository: IUserRepository,
-    private readonly emailService: IEmailService,
-    private readonly tokenService: ITokenService,
-    private readonly cacheService: ICacheService,
+    private readonly _userRepository: IUserRepository,
+    private readonly _emailService: IEmailService,
+    private readonly _tokenService: ITokenService,
+    private readonly _cacheService: ICacheService,
   ) {}
 
   async execute(email: string): Promise<void> {
-    const user = await this.userRepository.findByEmailFromDB(email);
+    const user = await this._userRepository.findByEmailFromDB(email);
 
     if (!user || !user._id) {
       throw new Error("User not found");
@@ -26,9 +22,9 @@ export class VerifyEmailUsecase {
 
     const userId = user._id.toString();
 
-    const token = this.tokenService.generateResetToken(userId);
+    const token = this._tokenService.generateResetToken(userId);
 
-    await this.cacheService.storeResetToken(userId, token, 10 * 60);
+    await this._cacheService.storeResetToken(userId, token, 10 * 60);
 
     const resetLink = `${CLIENT_URL}/reset-password?token=${token}`;
 
@@ -47,6 +43,6 @@ export class VerifyEmailUsecase {
       </div>
     `;
 
-    await this.emailService.sendMail(email, subject, html);
+    await this._emailService.sendMail(email, subject, html);
   }
 }

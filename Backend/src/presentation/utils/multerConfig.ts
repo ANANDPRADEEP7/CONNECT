@@ -3,11 +3,6 @@ import path from "path";
 import { Request } from "express";
 import { AppConstants } from "../../application/constants/AppConstants";
 
-/**
- * Multer configuration – Presentation/Utils Layer
- * Extracted from user.routes.ts so it can be reused in any route that needs file uploads.
- */
-
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     cb(null, path.join(process.cwd(), "uploads"));

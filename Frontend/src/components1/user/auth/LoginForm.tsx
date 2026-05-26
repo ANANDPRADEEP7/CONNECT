@@ -30,8 +30,9 @@ const LoginForm = () => {
       localStorage.setItem("token", response.token);
       toast.success(response.message || "Logged in successfully!");
       navigate("/home");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Login failed. Please try again.");
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Login failed. Please try again.");
     }
   };
 
@@ -44,8 +45,9 @@ const LoginForm = () => {
         localStorage.setItem("token", result.token);
         toast.success(result.message || "Logged in with Google successfully!");
         navigate("/home");
-      } catch (error: any) {
-        toast.error(error?.response?.data?.message || "Google login failed. Please try again.");
+      } catch (error: unknown) {
+        const err = error as { response?: { data?: { message?: string } } };
+        toast.error(err.response?.data?.message || "Google login failed. Please try again.");
       } finally {
         setGoogleLoading(false);
       }

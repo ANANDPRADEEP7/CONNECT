@@ -1,12 +1,19 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
 import { userApi } from "../Endpoints/Api/user/userApi";
 import { adminApi } from "../Endpoints/Api/Admin/adminApi";
+import { UserRole } from "../enums/UserRole.enum";
 
 interface User {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: UserRole;
 }
 
 interface AuthContextType {
@@ -21,7 +28,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [admin, setAdmin] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,7 +91,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ user, admin, login, adminLogin, logout, adminLogout, isLoading }}>
+    <AuthContext.Provider
+      value={{ user, admin, login, adminLogin, logout, adminLogout, isLoading }}
+    >
       {children}
     </AuthContext.Provider>
   );

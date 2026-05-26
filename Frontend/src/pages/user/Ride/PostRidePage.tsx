@@ -30,12 +30,12 @@ type PostRideValues = z.infer<typeof postRideSchema>;
 // ─── Component ────────────────────────────────────────────────────────────────
 import { Component, ReactNode } from "react";
 
-class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: any }> {
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: Error | null }> {
   constructor(props: { children: ReactNode }) {
     super(props);
     this.state = { hasError: false, error: null };
   }
-  static getDerivedStateFromError(error: any) {
+  static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
   }
   render() {

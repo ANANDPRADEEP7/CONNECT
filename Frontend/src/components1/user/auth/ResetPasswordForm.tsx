@@ -8,7 +8,14 @@ import { userApi } from "../../../Endpoints/Api/user/userApi";
 
 const resetPasswordSchema = z
   .object({
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(64, "Password must be under 64 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number")
+      .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -40,8 +47,9 @@ const ResetPasswordForm = () => {
       const response = await userApi.resetPassword(token, data.password);
       toast.success(response.message || "Password reset successfully!");
       navigate("/user/login");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Something went wrong. Please try again.");
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Something went wrong. Please try again.");
     }
   };
 

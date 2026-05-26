@@ -11,6 +11,7 @@ export class UserMapper {
    */
   static toPublicProfile(user: User): Omit<User, "password"> {
     const { password, ...publicUser } = user;
+    void password;
     return publicUser;
   }
 

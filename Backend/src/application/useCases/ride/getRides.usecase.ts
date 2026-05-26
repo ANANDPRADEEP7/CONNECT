@@ -6,27 +6,16 @@ import {
   IGetRidesUseCase,
 } from "../../interfaces/usecases/Rider/getRides.usecase.interface";
 
+import { RideMapper } from "../../mappers/Ride/RideMapper";
+
 export class GetRidesUseCase implements IGetRidesUseCase {
-  constructor(private readonly rideRepository: IRideRepository) {}
+  constructor(private readonly _rideRepository: IRideRepository) {}
 
   async execute(): Promise<GetRidesResponse[]> {
-    const rides = await this.rideRepository.findAll({
+    const rides = await this._rideRepository.findAll({
       status: "active",
     });
 
-    return rides.map((ride) => ({
-      id: ride._id.toString(),
-      riderId: ride.riderId.toString(),
-      from: ride.from,
-      to: ride.to,
-      date: ride.date,
-      time: ride.time,
-      seats: ride.seats,
-      pricePerSeat: ride.pricePerSeat,
-      description: ride.description,
-      status: ride.status,
-      createdAt: ride.createdAt,
-      updatedAt: ride.updatedAt,
-    }));
+    return RideMapper.toRideDTOList(rides);
   }
 }

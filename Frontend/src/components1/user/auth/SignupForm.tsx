@@ -28,8 +28,9 @@ const SignupForm = () => {
       const response = await userApi.Register(data);
       toast.success(response.message);
       navigate("/user/verifyOtp", { state: { email: data.email } });
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Signup failed. Please try again.");
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Signup failed. Please try again.");
     }
   };
 
@@ -42,8 +43,9 @@ const SignupForm = () => {
         localStorage.setItem("token", result.token);
         toast.success(result.message || "Signed up with Google successfully!");
         navigate("/home");
-      } catch (error: any) {
-        toast.error(error?.response?.data?.message || "Google sign-up failed. Please try again.");
+      } catch (error: unknown) {
+        const err = error as { response?: { data?: { message?: string } } };
+        toast.error(err.response?.data?.message || "Google sign-up failed. Please try again.");
       } finally {
         setGoogleLoading(false);
       }

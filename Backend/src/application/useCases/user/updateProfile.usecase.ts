@@ -4,21 +4,22 @@ import {
   UpdateProfileRequest,
   UpdateProfileResponse,
 } from "../../interfaces/usecases/User/updateProfile.usecase.interface";
+import { RiderStatus } from "../../../domain/enums/UserRole.enum";
 
 export class UpdateProfileUseCase implements IUpdateProfileUseCase {
-  constructor(private readonly userRepository: IUserRepository) {}
+  constructor(private readonly _userRepository: IUserRepository) {}
 
   async execute(userId: string, profileData: UpdateProfileRequest): Promise<UpdateProfileResponse> {
     const dataToUpdate = {
       ...profileData,
-      isRiderActive: "pending",
+      isRiderActive: RiderStatus.PENDING,
     };
 
-    await this.userRepository.update(userId, dataToUpdate);
+    await this._userRepository.update(userId, dataToUpdate);
 
     return {
       message: "Profile updated successfully",
-      isRiderActive: "pending",
+      isRiderActive: RiderStatus.PENDING,
     };
   }
 }

@@ -1,24 +1,25 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthRequest } from "../../middleware/AuthMiddleware";
-import { UpdateProfileUseCase } from "../../../application/useCases/user/updateProfile.usecase";
-import { GetUserDetailsUseCase } from "../../../application/useCases/user/getUserDetails.usecase";
 import { HttpStatus } from "../../../domain/enums/HttpStatus.enum";
 import { ResponseMessage } from "../../../domain/enums/ResponseMessage.enum";
 import { IUpdateProfileUseCase } from "../../../application/interfaces/usecases/User/updateProfile.usecase.interface";
 import { IGetUserDetailsUseCase } from "../../../application/interfaces/usecases/Auth/getuserDetails.usecase.interface";
 import { validateUpdateProfileBody } from "../../validationSchemas/userProfile.validation";
+import { createApiResponse } from "../../utils/apiResponse";
 
 export class UserProfileController {
   constructor(
-    private readonly updateProfileUseCase: IUpdateProfileUseCase,
-    private readonly getUserDetailsUseCase: IGetUserDetailsUseCase,
+    private readonly _updateProfileUseCase: IUpdateProfileUseCase,
+    private readonly _getUserDetailsUseCase: IGetUserDetailsUseCase,
   ) {}
 
   getUserDetails = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { userId } = req.params;
-      const user = await this.getUserDetailsUseCase.execute(userId as string);
-      return res.status(HttpStatus.OK).json(user);
+      const user = await this._getUserDetailsUseCase.execute(userId as string);
+      return res
+        .status(HttpStatus.OK)
+        .json(createApiResponse(HttpStatus.OK, "User details fetched successfully", user));
     } catch (error) {
       next(error);
     }
@@ -26,11 +27,13 @@ export class UserProfileController {
 
   updateProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      // Files are uploaded to Cloudinary on the frontend.
-      // The frontend sends Cloudinary secure_url strings in the JSON body.
       const validation = validateUpdateProfileBody(req.body);
       if (!validation.valid) {
-        return res.status(HttpStatus.BAD_REQUEST).json({ message: validation.message });
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json(
+            createApiResponse(HttpStatus.BAD_REQUEST, validation.message || "Validation failed"),
+          );
       }
 
       const { userId, bio, govId, vehicleImage, pucImage, rcImage } = req.body;
@@ -49,12 +52,11 @@ export class UserProfileController {
       if (pucImage) profileData.pucImage = pucImage;
       if (rcImage) profileData.rcImage = rcImage;
 
-      // Use case: updates user in DB and sets isRiderActive = "pending"
-      await this.updateProfileUseCase.execute(userId, profileData);
+      await this._updateProfileUseCase.execute(userId, profileData);
 
-      return res.status(HttpStatus.OK).json({
-        message: ResponseMessage.PROFILE_PENDING_REVIEW,
-      });
+      return res
+        .status(HttpStatus.OK)
+        .json(createApiResponse(HttpStatus.OK, ResponseMessage.PROFILE_PENDING_REVIEW));
     } catch (error) {
       next(error);
     }

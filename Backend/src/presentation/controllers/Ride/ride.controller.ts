@@ -5,12 +5,14 @@ import { ResponseMessage } from "../../../domain/enums/ResponseMessage.enum";
 import { ICreateRideUseCase } from "../../../application/interfaces/usecases/Rider/createRide.usecase.interface";
 import { IGetRidesUseCase } from "../../../application/interfaces/usecases/Rider/getRides.usecase.interface";
 import { IGetMyRidesUseCase } from "../../../application/interfaces/usecases/Rider/getMyRides.usecase.interface";
+import { validateCreateRideBody } from "../../validationSchemas/ride.validation";
+import { createApiResponse } from "../../utils/apiResponse";
 
 export class RideController {
   constructor(
-    private readonly createRideUseCase: ICreateRideUseCase,
-    private readonly getRidesUseCase: IGetRidesUseCase,
-    private readonly getMyRidesUseCase: IGetMyRidesUseCase,
+    private readonly _createRideUseCase: ICreateRideUseCase,
+    private readonly _getRidesUseCase: IGetRidesUseCase,
+    private readonly _getMyRidesUseCase: IGetMyRidesUseCase,
   ) {}
 
   createRide = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -18,14 +20,23 @@ export class RideController {
       const riderId = req.user?.id;
 
       if (!riderId) {
-        return res.status(HttpStatus.UNAUTHORIZED).json({
-          message: ResponseMessage.AUTH_REQUIRED,
-        });
+        return res
+          .status(HttpStatus.UNAUTHORIZED)
+          .json(createApiResponse(HttpStatus.UNAUTHORIZED, ResponseMessage.AUTH_REQUIRED));
+      }
+
+      const validation = validateCreateRideBody(req.body);
+      if (!validation.valid) {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json(
+            createApiResponse(HttpStatus.BAD_REQUEST, validation.message || "Validation failed"),
+          );
       }
 
       const { from, to, date, time, seats, pricePerSeat, description } = req.body;
 
-      const response = await this.createRideUseCase.execute(riderId, {
+      const response = await this._createRideUseCase.execute(riderId, {
         from,
         to,
         date,
@@ -35,7 +46,9 @@ export class RideController {
         description,
       });
 
-      return res.status(HttpStatus.CREATED).json(response);
+      return res
+        .status(HttpStatus.CREATED)
+        .json(createApiResponse(HttpStatus.CREATED, "Ride created successfully", response));
     } catch (error) {
       next(error);
     }
@@ -44,8 +57,10 @@ export class RideController {
   /** GET /ride – Get all active rides */
   getAllRides = async (_req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const rides = await this.getRidesUseCase.execute();
-      return res.status(HttpStatus.OK).json(rides);
+      const rides = await this._getRidesUseCase.execute();
+      return res
+        .status(HttpStatus.OK)
+        .json(createApiResponse(HttpStatus.OK, "All rides fetched successfully", rides));
     } catch (error) {
       next(error);
     }
@@ -56,10 +71,14 @@ export class RideController {
     try {
       const riderId = req.user?.id;
       if (!riderId) {
-        return res.status(HttpStatus.UNAUTHORIZED).json({ message: ResponseMessage.AUTH_REQUIRED });
+        return res
+          .status(HttpStatus.UNAUTHORIZED)
+          .json(createApiResponse(HttpStatus.UNAUTHORIZED, ResponseMessage.AUTH_REQUIRED));
       }
-      const rides = await this.getMyRidesUseCase.execute(riderId);
-      return res.status(HttpStatus.OK).json(rides);
+      const rides = await this._getMyRidesUseCase.execute(riderId);
+      return res
+        .status(HttpStatus.OK)
+        .json(createApiResponse(HttpStatus.OK, "My rides fetched successfully", rides));
     } catch (error) {
       next(error);
     }

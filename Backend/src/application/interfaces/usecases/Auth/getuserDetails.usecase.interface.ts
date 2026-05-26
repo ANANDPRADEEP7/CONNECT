@@ -1,12 +1,5 @@
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  isRiderActive: string | undefined;
-  isBlocked: boolean;
-}
+import { AuthUserDTO } from "../../../../application/mappers/Auth/AuthUserMapper";
 
 export interface IGetUserDetailsUseCase {
-  execute(userId: string): Promise<User>;
+  execute(userId: string): Promise<AuthUserDTO>;
 }

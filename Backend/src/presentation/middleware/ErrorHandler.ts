@@ -15,7 +15,12 @@ export class AppError extends Error {
   }
 }
 
-export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
+export const errorHandler = (
+  err: Error & { statusCode?: number },
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
   const statusCode = err.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
   const message = err.message || ResponseMessage.INTERNAL_SERVER_ERROR;
 

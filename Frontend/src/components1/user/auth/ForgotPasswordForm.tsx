@@ -24,8 +24,9 @@ const ForgotPasswordForm = () => {
     try {
       const response = await userApi.forgotPassword(data.email);
       toast.success(response.message || "Password reset link sent to your email!");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Something went wrong. Please try again.");
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Something went wrong. Please try again.");
     }
   };
 

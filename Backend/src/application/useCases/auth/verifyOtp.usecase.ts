@@ -1,13 +1,14 @@
 import { IUserRepository } from "../../interfaces/repositories/User/IUserRepository";
 import bcrypt from "bcrypt";
 import { IVerifyOtpusecase } from "../../interfaces/usecases/Auth/verifyOtp.usecase.inteface";
+import { UserRole } from "../../../domain/enums/UserRole.enum";
 
 export class VerifyOtpUseCase implements IVerifyOtpusecase {
-  constructor(private userRepository: IUserRepository) {}
+  constructor(private _userRepository: IUserRepository) {}
 
   async execute(Otp: string, email: string) {
     console.log(Otp, email);
-    const storedOtp = await this.userRepository.getOtp(email);
+    const storedOtp = await this._userRepository.getOtp(email);
     console.log("hhhhhhhhh", storedOtp);
     if (!storedOtp) {
       throw new Error("otp is expired ");
@@ -17,10 +18,10 @@ export class VerifyOtpUseCase implements IVerifyOtpusecase {
     }
     const hashedPassword = await bcrypt.hash(storedOtp.password, 10);
 
-    const user = await this.userRepository.create({
+    await this._userRepository.create({
       name: storedOtp.name,
       email: storedOtp.email,
-      role: "user",
+      role: UserRole.USER,
       phonenumber: storedOtp.phonenumber,
       password: hashedPassword,
       isBlocked: false,

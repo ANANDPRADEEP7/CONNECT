@@ -8,30 +8,52 @@ import { IToggleBlockUserUseCase } from "../../../application/interfaces/usecase
 import { IGetAllRidersUseCase } from "../../../application/interfaces/usecases/Admin/getAllRiders.usecase.interface";
 import { IUpdateRiderStatusUseCase } from "../../../application/interfaces/usecases/Admin/updateRiderStatus.usecase.interface";
 import { IGetUserDetailsUseCase } from "../../../application/interfaces/usecases/Auth/getuserDetails.usecase.interface";
+import { validateLoginBody } from "../../validationSchemas/auth.validation";
+import { validateUpdateRiderStatusBody } from "../../validationSchemas/admin.validation";
+import { UserRole } from "../../../domain/enums/UserRole.enum";
+import { createApiResponse } from "../../utils/apiResponse";
 
 export class AdminController {
   constructor(
-    private readonly adminLoginUseCase: IAdminLoginUseCase,
-    private readonly getAllUsersUseCase: IGetAllUsersUseCase,
-    private readonly toggleBlockUserUseCase: IToggleBlockUserUseCase,
-    private readonly getAllRidersUseCase: IGetAllRidersUseCase,
-    private readonly updateRiderStatusUseCase: IUpdateRiderStatusUseCase,
-    private readonly getUserDetailsUseCase: IGetUserDetailsUseCase,
+    private readonly _adminLoginUseCase: IAdminLoginUseCase,
+    private readonly _getAllUsersUseCase: IGetAllUsersUseCase,
+    private readonly _toggleBlockUserUseCase: IToggleBlockUserUseCase,
+    private readonly _getAllRidersUseCase: IGetAllRidersUseCase,
+    private readonly _updateRiderStatusUseCase: IUpdateRiderStatusUseCase,
+    private readonly _getUserDetailsUseCase: IGetUserDetailsUseCase,
   ) {}
 
   login = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { email, password } = req.body;
-      const result = await this.adminLoginUseCase.execute(email, password);
+      const validation = validateLoginBody(req.body);
+      if (!validation.valid) {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json(
+            createApiResponse(HttpStatus.BAD_REQUEST, validation.message || "Validation failed"),
+          );
+      }
 
-      res.cookie("adminToken", result.token, {
+      const { email, password } = req.body;
+      const result = await this._adminLoginUseCase.execute(email, password);
+
+      const cookieOpts = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "lax" as const,
+      };
+
+      res.cookie("adminToken", result.token, { ...cookieOpts, maxAge: 15 * 60 * 1000 });
+      res.cookie("adminRefreshToken", result.refreshToken, {
+        ...cookieOpts,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return res.status(HttpStatus.OK).json(result);
+      const { refreshToken: _rt, ...safeResult } = result;
+      void _rt;
+      return res
+        .status(HttpStatus.OK)
+        .json(createApiResponse(HttpStatus.OK, "Admin logged in successfully", safeResult));
     } catch (error) {
       next(error);
     }
@@ -39,18 +61,25 @@ export class AdminController {
 
   logout = async (req: Request, res: Response) => {
     res.clearCookie("adminToken");
-    return res.status(HttpStatus.OK).json({ message: ResponseMessage.LOGOUT_SUCCESS });
+    res.clearCookie("adminRefreshToken");
+    return res
+      .status(HttpStatus.OK)
+      .json(createApiResponse(HttpStatus.OK, ResponseMessage.LOGOUT_SUCCESS));
   };
 
   me = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const decodedAdmin = req.user;
-      if (!decodedAdmin || decodedAdmin.role !== "admin") {
-        return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Not authenticated as admin" });
+      if (!decodedAdmin || decodedAdmin.role !== UserRole.ADMIN) {
+        return res
+          .status(HttpStatus.UNAUTHORIZED)
+          .json(createApiResponse(HttpStatus.UNAUTHORIZED, "Not authenticated as admin"));
       }
 
-      const admin = await this.getUserDetailsUseCase.execute(decodedAdmin.id);
-      return res.status(HttpStatus.OK).json({ admin });
+      const admin = await this._getUserDetailsUseCase.execute(decodedAdmin.id);
+      return res
+        .status(HttpStatus.OK)
+        .json(createApiResponse(HttpStatus.OK, "Admin details fetched successfully", { admin }));
     } catch (error) {
       next(error);
     }
@@ -60,8 +89,12 @@ export class AdminController {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-      const users = await this.getAllUsersUseCase.execute(page, limit);
-      return res.status(HttpStatus.OK).json(users);
+      const search = req.query.search as string | undefined;
+      const filter = req.query.filter as string | undefined;
+      const users = await this._getAllUsersUseCase.execute(page, limit, search, filter);
+      return res
+        .status(HttpStatus.OK)
+        .json(createApiResponse(HttpStatus.OK, "Users list fetched successfully", users));
     } catch (error) {
       next(error);
     }
@@ -70,8 +103,10 @@ export class AdminController {
   toggleBlockUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const result = await this.toggleBlockUserUseCase.execute(id as string);
-      return res.status(HttpStatus.OK).json(result);
+      const result = await this._toggleBlockUserUseCase.execute(id as string);
+      return res
+        .status(HttpStatus.OK)
+        .json(createApiResponse(HttpStatus.OK, result.message, result));
     } catch (error) {
       next(error);
     }
@@ -81,8 +116,12 @@ export class AdminController {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-      const riders = await this.getAllRidersUseCase.execute(page, limit);
-      return res.status(HttpStatus.OK).json(riders);
+      const search = req.query.search as string | undefined;
+      const filter = req.query.filter as string | undefined;
+      const riders = await this._getAllRidersUseCase.execute(page, limit, search, filter);
+      return res
+        .status(HttpStatus.OK)
+        .json(createApiResponse(HttpStatus.OK, "Riders list fetched successfully", riders));
     } catch (error) {
       next(error);
     }
@@ -90,10 +129,25 @@ export class AdminController {
 
   updateRiderStatus = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const validation = validateUpdateRiderStatusBody(req.body);
+      if (!validation.valid) {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json(
+            createApiResponse(HttpStatus.BAD_REQUEST, validation.message || "Validation failed"),
+          );
+      }
+
       const { id } = req.params;
-      const { status } = req.body; // "active" or "declined"
-      const result = await this.updateRiderStatusUseCase.execute(id as string, status);
-      return res.status(HttpStatus.OK).json(result);
+      const { status, rejectionReason } = req.body;
+      const result = await this._updateRiderStatusUseCase.execute(
+        id as string,
+        status,
+        rejectionReason,
+      );
+      return res
+        .status(HttpStatus.OK)
+        .json(createApiResponse(HttpStatus.OK, result.message, result));
     } catch (error) {
       next(error);
     }

@@ -4,22 +4,20 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { useAppSelector } from "../../../store/hooks";
+import { useAppSelector, useAppDispatch } from "../../../store/hooks";
+import { setUser } from "../../../store/slices/authSlice";
 import ProfileHeader from "../../../components1/user/Profile/ProfileHeader";
 import ProfileInfo from "../../../components1/user/Profile/ProfileInfo";
 import { Button } from "../../../components/ui/button";
 import CollapsibleSection from "../../../components1/user/Profile/CollapsibleSection";
 import FileUploadField from "../../../components1/user/Profile/FileUploadField";
 import { userApi } from "../../../Endpoints/Api/user/userApi";
+import { AxiosError } from "axios";
 
 // ─── Cloudinary Direct Upload Helper ─────────────────────────────────────────
-const CLOUD_NAME   = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME   as string;
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string;
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET as string;
 
-/**
- * Uploads a single File to Cloudinary using an unsigned upload preset.
- * Returns the secure_url of the uploaded asset.
- */
 async function uploadToCloudinary(file: File): Promise<string> {
   const fd = new FormData();
   fd.append("file", file);
@@ -27,12 +25,14 @@ async function uploadToCloudinary(file: File): Promise<string> {
 
   const res = await fetch(
     `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`,
-    { method: "POST", body: fd }
+    { method: "POST", body: fd },
   );
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error((err as any)?.error?.message || "Cloudinary upload failed");
+    const err = (await res.json().catch(() => ({}))) as {
+      error?: { message?: string };
+    };
+    throw new Error(err.error?.message || "Cloudinary upload failed");
   }
 
   const json = await res.json();
@@ -45,19 +45,41 @@ const profileSchema = z.object({
     .string()
     .min(10, "Bio must be at least 10 characters")
     .max(300, "Bio must be under 300 characters"),
-  govId: z.any().refine((f) => f instanceof File, "Government ID is required"),
-  vehicleImage: z.any().refine((f) => f instanceof File, "Vehicle image is required"),
-  pucImage: z.any().refine((f) => f instanceof File, "PUC document is required"),
-  rcImage: z.any().refine((f) => f instanceof File, "RC document is required"),
+  govId: z.union([z.instanceof(File), z.string()]).optional(),
+  vehicleImage: z.union([z.instanceof(File), z.string()]).optional(),
+  pucImage: z.union([z.instanceof(File), z.string()]).optional(),
+  rcImage: z.union([z.instanceof(File), z.string()]).optional(),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
-
+// ─── Existing Document Preview Component ──────────────────────────────────────
+const ExistingDocument = ({ url, label }: { url?: string; label: string }) => {
+  if (!url) return null;
+  return (
+    <div className="flex flex-col p-3 bg-accent/20 rounded-xl border border-border h-full">
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
+        {label}
+      </p>
+      <div className="mt-auto">
+        {url.endsWith(".pdf") ? (
+          <a href={url} target="_blank" rel="noreferrer" className="text-xs text-blue-500 font-medium hover:underline flex items-center justify-center h-24 bg-background rounded-lg border border-border">
+            View PDF
+          </a>
+        ) : (
+          <a href={url} target="_blank" rel="noreferrer">
+            <img src={url} alt={label} className="w-full h-24 object-cover rounded-lg border border-border hover:opacity-90 transition-opacity" />
+          </a>
+        )}
+      </div>
+    </div>
+  );
+};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const Profile = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [showVerification, setShowVerification] = useState(false);
   const [currentUser, setCurrentUser] = useState({
     _id: "",
@@ -71,7 +93,7 @@ const Profile = () => {
   });
 
   const user = useAppSelector((state) => state.auth.user);
-  
+
   useEffect(() => {
     if (!user) {
       toast.error("Please login to view your profile");
@@ -94,7 +116,6 @@ const Profile = () => {
     if (user.isRiderActive === "declined") {
       toast.error("Your rider verification was rejected by admin.");
     }
-
   }, [user, navigate]);
 
   const {
@@ -104,8 +125,14 @@ const Profile = () => {
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
-    defaultValues: { bio: "" },
   });
+
+  // Pre-fill bio when user loads
+  useEffect(() => {
+    if (user?.bio) {
+      setValue("bio", user.bio);
+    }
+  }, [user, setValue]);
 
   // Called when the form passes validation
   const onSubmit = async (data: ProfileFormData) => {
@@ -115,42 +142,90 @@ const Profile = () => {
         return;
       }
 
+      // ── Manual Validation for Files ──────────────────────────────────────────
+      if (!user?.govId && !(data.govId instanceof File)) {
+        toast.error("Government ID is required");
+        return;
+      }
+      if (!user?.vehicleImage && !(data.vehicleImage instanceof File)) {
+        toast.error("Vehicle image is required");
+        return;
+      }
+      if (!user?.pucImage && !(data.pucImage instanceof File)) {
+        toast.error("PUC document is required");
+        return;
+      }
+      if (!user?.rcImage && !(data.rcImage instanceof File)) {
+        toast.error("RC document is required");
+        return;
+      }
+
       // ── Step 1: Upload each file to Cloudinary in parallel ──────────────────
       toast.info("Uploading documents… please wait.");
 
-      const [govIdUrl, vehicleImageUrl, pucImageUrl, rcImageUrl] = await Promise.all([
-        data.govId        instanceof File ? uploadToCloudinary(data.govId)        : Promise.resolve(undefined),
-        data.vehicleImage instanceof File ? uploadToCloudinary(data.vehicleImage) : Promise.resolve(undefined),
-        data.pucImage     instanceof File ? uploadToCloudinary(data.pucImage)     : Promise.resolve(undefined),
-        data.rcImage      instanceof File ? uploadToCloudinary(data.rcImage)      : Promise.resolve(undefined),
-      ]);
+      const [govIdUrl, vehicleImageUrl, pucImageUrl, rcImageUrl] =
+        await Promise.all([
+          data.govId instanceof File
+            ? uploadToCloudinary(data.govId)
+            : Promise.resolve(undefined),
+          data.vehicleImage instanceof File
+            ? uploadToCloudinary(data.vehicleImage)
+            : Promise.resolve(undefined),
+          data.pucImage instanceof File
+            ? uploadToCloudinary(data.pucImage)
+            : Promise.resolve(undefined),
+          data.rcImage instanceof File
+            ? uploadToCloudinary(data.rcImage)
+            : Promise.resolve(undefined),
+        ]);
 
-      // ── Step 2: POST JSON with Cloudinary URLs → /user/profile ──────────────
       await userApi.UpdateProfile({
-        userId:       currentUser._id,
-        bio:          data.bio,
-        ...(govIdUrl        && { govId:        govIdUrl }),
+        userId: currentUser._id,
+        bio: data.bio,
+        ...(govIdUrl && { govId: govIdUrl }),
         ...(vehicleImageUrl && { vehicleImage: vehicleImageUrl }),
-        ...(pucImageUrl     && { pucImage:     pucImageUrl }),
-        ...(rcImageUrl      && { rcImage:      rcImageUrl }),
+        ...(pucImageUrl && { pucImage: pucImageUrl }),
+        ...(rcImageUrl && { rcImage: rcImageUrl }),
       });
+
+      if (user) {
+        dispatch(
+          setUser({
+            ...user,
+            isRiderActive: "pending",
+            bio: data.bio,
+            ...(govIdUrl && { govId: govIdUrl }),
+            ...(vehicleImageUrl && { vehicleImage: vehicleImageUrl }),
+            ...(pucImageUrl && { pucImage: pucImageUrl }),
+            ...(rcImageUrl && { rcImage: rcImageUrl }),
+          }),
+        );
+      }
 
       toast.success("Profile submitted! Status is pending review.");
       navigate("/home");
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || error?.message || "Failed to submit profile. Please try again.");
+    } catch (error) {
+      if (error instanceof AxiosError)
+        toast.error(
+          error?.response?.data?.message ||
+            error?.message ||
+            "Failed to submit profile. Please try again.",
+        );
     }
   };
 
   // Helper to push a File into react-hook-form state
   const setFile = (field: keyof ProfileFormData, file: File | null) => {
-    setValue(field, file as any, { shouldValidate: true });
+    if (file) {
+      setValue(field, file as unknown as ProfileFormData[typeof field], {
+        shouldValidate: true,
+      });
+    }
   };
 
   return (
     <div className="min-h-screen bg-background flex items-start justify-center py-10 px-4">
       <div className="w-full max-w-xl space-y-4">
-
         {/* Profile Header */}
         <ProfileHeader
           name={currentUser.name}
@@ -167,19 +242,37 @@ const Profile = () => {
           ]}
         />
 
-        {/* Show button to expand verification form, or show the form itself */}
-        {user?.isRiderActive === "declined" ? (
+        {/* Read-only Document View */}
+        {!showVerification && (user?.govId || user?.vehicleImage || user?.pucImage || user?.rcImage) && (
+          <div className="bg-card border border-border rounded-xl p-5 mb-4 shadow-sm">
+            <h3 className="text-xs font-bold tracking-widest uppercase mb-4 text-foreground/80 border-b border-border pb-2">Submitted Documents</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {user.govId && <ExistingDocument url={user.govId} label="Gov ID" />}
+              {user.vehicleImage && <ExistingDocument url={user.vehicleImage} label="Vehicle" />}
+              {user.pucImage && <ExistingDocument url={user.pucImage} label="PUC" />}
+              {user.rcImage && <ExistingDocument url={user.rcImage} label="RC" />}
+            </div>
+          </div>
+        )}
+
+        {user?.isRiderActive === "declined" && !showVerification ? (
           <div className="flex justify-center flex-col items-center gap-3 bg-red-500/10 p-4 border border-red-500/20 rounded-md">
             <span className="text-red-500 font-semibold tracking-wider uppercase text-sm">
               Verification Rejected
             </span>
-            <span className="text-xs text-muted-foreground text-center">
-              Your previous profile application has been rejected by the admin. Please resubmit your accurate details.
+            {user?.rejectionReason && (
+              <div className="bg-red-500/20 border border-red-500/30 text-red-500 text-xs px-3 py-2 rounded text-center w-full max-w-sm">
+                <strong>Reason: </strong> {user.rejectionReason}
+              </div>
+            )}
+            <span className="text-xs text-muted-foreground text-center mt-1">
+              Your previous profile application has been rejected by the admin.
+              Please resubmit your accurate details.
             </span>
             <Button
               type="button"
               variant="outline"
-              className="tracking-widest uppercase text-xs border-red-500/50 hover:bg-red-500/20 text-red-500"
+              className="tracking-widest uppercase text-xs border-red-500/50 hover:bg-red-500/20 text-red-500 mt-2"
               onClick={() => setShowVerification(true)}
             >
               Re-submit Verification Details
@@ -187,11 +280,11 @@ const Profile = () => {
           </div>
         ) : !showVerification ? (
           <div className="flex justify-center flex-col items-center gap-3">
-             {user?.isRiderActive === "pending" && (
-                <span className="text-yellow-500 font-semibold tracking-wider uppercase text-xs mb-2">
-                  Status: Pending Admin Approval
-                </span>
-             )}
+            {user?.isRiderActive === "pending" && (
+              <span className="text-yellow-500 font-semibold tracking-wider uppercase text-xs mb-2">
+                Status: Pending Admin Approval
+              </span>
+            )}
             <Button
               type="button"
               variant="outline"
@@ -203,18 +296,21 @@ const Profile = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-
             {/* ── Section 1: Gov ID & Email ── */}
             <div className="bg-card border border-border rounded-xl px-5 py-2 divide-y divide-border">
               <CollapsibleSection title="Verify Your Gov.ID">
+                <ExistingDocument url={user?.govId} label="Government ID" />
                 <FileUploadField
-                  label="Upload Government ID"
+                  label={user?.govId ? "Upload New Government ID (optional)" : "Upload Government ID"}
                   onFileChange={(f) => setFile("govId", f)}
                   error={errors.govId?.message as string}
                 />
               </CollapsibleSection>
 
-              <CollapsibleSection title="Confirm Email" subtitle={currentUser.email}>
+              <CollapsibleSection
+                title="Confirm Email"
+                subtitle={currentUser.email}
+              >
                 <p className="text-xs text-muted-foreground">
                   A confirmation link will be sent to{" "}
                   <span className="text-foreground">{currentUser.email}</span>
@@ -233,15 +329,18 @@ const Profile = () => {
                     className="w-full bg-input border border-border rounded-md px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-colors resize-none"
                   />
                   {errors.bio && (
-                    <p className="text-destructive text-xs pl-1">{errors.bio.message}</p>
+                    <p className="text-destructive text-xs pl-1">
+                      {errors.bio.message}
+                    </p>
                   )}
                 </div>
               </CollapsibleSection>
 
               <CollapsibleSection title="Vehicle Details">
                 <div className="space-y-3">
+                  <ExistingDocument url={user?.vehicleImage} label="Vehicle Image" />
                   <FileUploadField
-                    label="Upload Vehicle Image"
+                    label={user?.vehicleImage ? "Upload New Vehicle Image (optional)" : "Upload Vehicle Image"}
                     onFileChange={(f) => setFile("vehicleImage", f)}
                     error={errors.vehicleImage?.message as string}
                   />
@@ -249,16 +348,18 @@ const Profile = () => {
               </CollapsibleSection>
 
               <CollapsibleSection title="PUC - Valid">
+                <ExistingDocument url={user?.pucImage} label="PUC Document" />
                 <FileUploadField
-                  label="Upload PUC Document"
+                  label={user?.pucImage ? "Upload New PUC Document (optional)" : "Upload PUC Document"}
                   onFileChange={(f) => setFile("pucImage", f)}
                   error={errors.pucImage?.message as string}
                 />
               </CollapsibleSection>
 
               <CollapsibleSection title="RC - Valid">
+                <ExistingDocument url={user?.rcImage} label="RC Document" />
                 <FileUploadField
-                  label="Upload RC Document"
+                  label={user?.rcImage ? "Upload New RC Document (optional)" : "Upload RC Document"}
                   onFileChange={(f) => setFile("rcImage", f)}
                   error={errors.rcImage?.message as string}
                 />

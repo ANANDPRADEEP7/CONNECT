@@ -2,18 +2,14 @@ import winston from "winston";
 import { existsSync, mkdirSync } from "fs";
 import { ILogger } from "../../domain/interfaces/ILogger";
 
-/**
- * Winston Logger Implementation - Infrastructure layer
- * Concrete implementation of ILogger using Winston
- */
 export class WinstonLogger implements ILogger {
-  private logger: winston.Logger;
+  private _logger: winston.Logger;
 
   constructor() {
-    this.logger = this.createLogger();
+    this._logger = this._createLogger();
   }
 
-  private createLogger(): winston.Logger {
+  private _createLogger(): winston.Logger {
     // Define log levels
     const levels = {
       error: 0,
@@ -85,23 +81,23 @@ export class WinstonLogger implements ILogger {
     });
   }
 
-  info(message: string, meta?: any): void {
-    this.logger.info(message, meta);
+  info(message: string, meta?: Record<string, unknown>): void {
+    this._logger.info(message, meta);
   }
 
-  error(message: string, meta?: any): void {
-    this.logger.error(message, meta);
+  error(message: string, meta?: Record<string, unknown>): void {
+    this._logger.error(message, meta);
   }
 
-  warn(message: string, meta?: any): void {
-    this.logger.warn(message, meta);
+  warn(message: string, meta?: Record<string, unknown>): void {
+    this._logger.warn(message, meta);
   }
 
-  debug(message: string, meta?: any): void {
-    this.logger.debug(message, meta);
+  debug(message: string, meta?: Record<string, unknown>): void {
+    this._logger.debug(message, meta);
   }
 
-  http(message: string, meta?: any): void {
-    this.logger.http(message, meta);
+  http(message: string, meta?: Record<string, unknown>): void {
+    this._logger.http(message, meta);
   }
 }

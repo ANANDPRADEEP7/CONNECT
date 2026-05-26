@@ -9,6 +9,7 @@ export class RideRepository extends BaseRepository<Ride> implements IRideReposit
   }
   async create(ride: Omit<Ride, "_id" | "createdAt" | "updatedAt">): Promise<Ride> {
     const doc = await RideModel.create(ride);
+
     return doc.toObject();
   }
 

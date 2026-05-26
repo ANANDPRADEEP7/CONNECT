@@ -1,18 +1,19 @@
-type userType = "user" | "admin" | "rider";
+import { UserRole, RiderStatus } from "../../enums/UserRole.enum";
 
 export interface User {
   _id: string;
   name: string;
   email: string;
   phonenumber: string;
-  role: userType;
+  role: UserRole;
   password: string;
   isBlocked: boolean;
   isVerified?: boolean;
-  isRiderActive?: string; // "none" | "pending" | "active" | "declined"
+  isRiderActive?: RiderStatus;
   bio?: string;
-  govId?: string; // Stored as URL path, e.g. /uploads/filename.jpg
+  govId?: string;
   vehicleImage?: string;
   pucImage?: string;
   rcImage?: string;
+  rejectionReason?: string | null;
 }

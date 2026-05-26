@@ -1,6 +1,7 @@
 interface AdminLoginResponse {
   message: string;
   token: string;
+  refreshToken: string;
   admin: Admin;
 }
 

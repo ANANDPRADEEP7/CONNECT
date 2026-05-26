@@ -1,11 +1,3 @@
-/**
- * User Routes – Presentation Layer
- * Thin router: only wires HTTP verbs + middleware to controller methods.
- * All dependency creation is handled by AppContainer.
- *
- * NOTE: File uploads are handled client-side via Cloudinary.
- * The frontend sends Cloudinary secure_url strings in the JSON body.
- */
 import { Router } from "express";
 import { AppContainer } from "../../../infrastructure/DI/AppContainer";
 import { authenticateUser } from "../../middleware/AuthMiddleware";

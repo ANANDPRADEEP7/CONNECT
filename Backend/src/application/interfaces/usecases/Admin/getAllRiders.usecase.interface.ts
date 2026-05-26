@@ -20,5 +20,10 @@ export interface PaginatedRidersResponse {
 }
 
 export interface IGetAllRidersUseCase {
-  execute(page?: number, limit?: number): Promise<PaginatedRidersResponse>;
+  execute(
+    page: number,
+    limit: number,
+    search?: string,
+    filter?: string,
+  ): Promise<PaginatedRidersResponse>;
 }

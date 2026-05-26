@@ -14,4 +14,6 @@ export interface ITokenService {
   verifyResetToken(token: string): string | null;
   generateAuthToken(payload: TokenPayload): string;
   verifyToken(token: string): TokenPayload | null;
+  generateRefreshToken(payload: TokenPayload): string;
+  verifyRefreshToken(token: string): TokenPayload | null;
 }

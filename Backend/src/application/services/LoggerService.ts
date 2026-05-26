@@ -6,47 +6,47 @@ import { ILogger } from "../../domain/interfaces/ILogger";
  * Depends on abstraction (ILogger) not concrete implementation
  */
 export class LoggerService {
-  constructor(private logger: ILogger) {}
+  constructor(private _logger: ILogger) {}
 
   /**
    * Log informational message
    */
-  info(message: string, meta?: any): void {
-    this.logger.info(message, meta);
+  info(message: string, meta?: Record<string, unknown>): void {
+    this._logger.info(message, meta);
   }
 
   /**
    * Log error message
    */
-  error(message: string, meta?: any): void {
-    this.logger.error(message, meta);
+  error(message: string, meta?: Record<string, unknown>): void {
+    this._logger.error(message, meta);
   }
 
   /**
    * Log warning message
    */
-  warn(message: string, meta?: any): void {
-    this.logger.warn(message, meta);
+  warn(message: string, meta?: Record<string, unknown>): void {
+    this._logger.warn(message, meta);
   }
 
   /**
    * Log debug message
    */
-  debug(message: string, meta?: any): void {
-    this.logger.debug(message, meta);
+  debug(message: string, meta?: Record<string, unknown>): void {
+    this._logger.debug(message, meta);
   }
 
   /**
    * Log HTTP request
    */
-  http(message: string, meta?: any): void {
-    this.logger.http(message, meta);
+  http(message: string, meta?: Record<string, unknown>): void {
+    this._logger.http(message, meta);
   }
 
   /**
    * Log user action
    */
-  logUserAction(action: string, userId?: string, meta?: any): void {
+  logUserAction(action: string, userId?: string, meta?: Record<string, unknown>): void {
     this.info(`User action: ${action}`, { userId, ...meta });
   }
 
@@ -67,7 +67,7 @@ export class LoggerService {
   /**
    * Log error with context
    */
-  logError(error: Error, context?: string, meta?: any): void {
+  logError(error: Error, context?: string, meta?: Record<string, unknown>): void {
     this.error(`${context ? context + ": " : ""}${error.message}`, {
       stack: error.stack,
       ...meta,

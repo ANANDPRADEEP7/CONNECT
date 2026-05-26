@@ -1,18 +1,3 @@
-/**
- * AppContainer – Infrastructure / DI Layer
- * ─────────────────────────────────────────
- * This is the single composition root for the entire application.
- * ALL dependencies are wired here and exposed as lazily-created singletons.
- *
- * Benefits:
- * - Routes and controllers stay thin (no `new` calls scattered around routes).
- * - Easy to swap implementations (e.g. replace InMemoryCache with Redis).
- * - Testable: replace any service with a mock in tests by subclassing this container.
- *
- * Dependency direction (Clean Architecture):
- *   Domain ← Application ← Infrastructure ← (this container) ← Presentation
- */
-
 // ── Infrastructure services ──────────────────────────────────────────────────
 import { UserRepository } from "../repository/Users/UserRepository";
 import { RideRepository } from "../repository/Rides/RideRepository";
@@ -63,11 +48,11 @@ export class AppContainer {
   private static _instance: AppContainer;
 
   // Infrastructure
-  readonly userRepository = new UserRepository();
-  readonly rideRepository = new RideRepository();
-  readonly tokenService = new JwtTokenService();
-  readonly cacheService = new InMemoryCacheService();
-  readonly googleAuthService = new GoogleAuthService();
+  private readonly _userRepository = new UserRepository();
+  private readonly _rideRepository = new RideRepository();
+  private readonly _tokenService = new JwtTokenService();
+  private readonly _cacheService = new InMemoryCacheService();
+  private readonly _googleAuthService = new GoogleAuthService();
 
   // Application services
   private readonly _loggerService = new LoggerService(new WinstonLogger());
@@ -79,78 +64,88 @@ export class AppContainer {
   get emailService() {
     return this._emailService;
   }
+  get tokenService() {
+    return this._tokenService;
+  }
 
   // ── Auth use cases ──────────────────────────────────────────────────────────
-  readonly signupUsecase = new SignupUsecase(this.userRepository, this._emailService);
-  readonly verifyOtpUseCase = new VerifyOtpUseCase(this.userRepository);
-  readonly resendOtpUseCase = new ResendOtpUseCase(this.userRepository, this._emailService);
-  readonly loginUseCase = new LoginUseCase(this.userRepository, this.tokenService);
-  readonly verifyEmailUsecase = new VerifyEmailUsecase(
-    this.userRepository,
+  private readonly _signupUsecase = new SignupUsecase(this._userRepository, this._emailService);
+  private readonly _verifyOtpUseCase = new VerifyOtpUseCase(this._userRepository);
+  private readonly _resendOtpUseCase = new ResendOtpUseCase(
+    this._userRepository,
     this._emailService,
-    this.tokenService,
-    this.cacheService,
   );
-  readonly resetPasswordUsecase = new ResetPasswordUsecase(
-    this.userRepository,
-    this.tokenService,
-    this.cacheService,
+  private readonly _loginUseCase = new LoginUseCase(this._userRepository, this._tokenService);
+  private readonly _verifyEmailUsecase = new VerifyEmailUsecase(
+    this._userRepository,
+    this._emailService,
+    this._tokenService,
+    this._cacheService,
   );
-  readonly googleLoginUsecase = new GoogleLoginUsecase(
-    this.userRepository,
-    this.googleAuthService,
-    this.tokenService,
+  private readonly _resetPasswordUsecase = new ResetPasswordUsecase(
+    this._userRepository,
+    this._tokenService,
+    this._cacheService,
+  );
+  private readonly _googleLoginUsecase = new GoogleLoginUsecase(
+    this._userRepository,
+    this._googleAuthService,
+    this._tokenService,
   );
 
   // ── User use cases ──────────────────────────────────────────────────────────
-  readonly getUserDetailsUseCase = new GetUserDetailsUseCase(this.userRepository);
-  readonly updateProfileUseCase = new UpdateProfileUseCase(this.userRepository);
+  private readonly _getUserDetailsUseCase = new GetUserDetailsUseCase(this._userRepository);
+  private readonly _updateProfileUseCase = new UpdateProfileUseCase(this._userRepository);
 
   // ── Admin use cases ─────────────────────────────────────────────────────────
-  readonly adminLoginUseCase = new AdminLoginUseCase(this.userRepository, this.tokenService);
-  readonly getAllUsersUseCase = new GetAllUsersUseCase(this.userRepository);
-  readonly getAllRidersUseCase = new GetAllRidersUseCase(this.userRepository);
-  readonly toggleBlockUserUseCase = new ToggleBlockUserUseCase(this.userRepository);
-  readonly updateRiderStatusUseCase = new UpdateRiderStatusUseCase(this.userRepository);
+  private readonly _adminLoginUseCase = new AdminLoginUseCase(
+    this._userRepository,
+    this._tokenService,
+  );
+  private readonly _getAllUsersUseCase = new GetAllUsersUseCase(this._userRepository);
+  private readonly _getAllRidersUseCase = new GetAllRidersUseCase(this._userRepository);
+  private readonly _toggleBlockUserUseCase = new ToggleBlockUserUseCase(this._userRepository);
+  private readonly _updateRiderStatusUseCase = new UpdateRiderStatusUseCase(this._userRepository);
 
   // ── Ride use cases ──────────────────────────────────────────────────────────
-  readonly createRideUseCase = new CreateRideUseCase(this.rideRepository);
-  readonly getRidesUseCase = new GetRidesUseCase(this.rideRepository);
-  readonly getMyRidesUseCase = new GetMyRidesUseCase(this.rideRepository);
+  private readonly _createRideUseCase = new CreateRideUseCase(this._rideRepository);
+  private readonly _getRidesUseCase = new GetRidesUseCase(this._rideRepository);
+  private readonly _getMyRidesUseCase = new GetMyRidesUseCase(this._rideRepository);
 
-  // ── Controllers ─────────────────────────────────────────────────────────────
+  // Controllers
   readonly authController = new UserController(
-    this.signupUsecase,
-    this.verifyOtpUseCase,
-    this.resendOtpUseCase,
-    this.loginUseCase,
-    this.verifyEmailUsecase,
-    this.resetPasswordUsecase,
-    this.googleLoginUsecase,
-    this.getUserDetailsUseCase,
+    this._signupUsecase,
+    this._verifyOtpUseCase,
+    this._resendOtpUseCase,
+    this._loginUseCase,
+    this._verifyEmailUsecase,
+    this._resetPasswordUsecase,
+    this._googleLoginUsecase,
+    this._getUserDetailsUseCase,
+    this._tokenService,
   );
 
   readonly userProfileController = new UserProfileController(
-    this.updateProfileUseCase,
-    this.getUserDetailsUseCase,
+    this._updateProfileUseCase,
+    this._getUserDetailsUseCase,
   );
 
   readonly adminController = new AdminController(
-    this.adminLoginUseCase,
-    this.getAllUsersUseCase,
-    this.toggleBlockUserUseCase,
-    this.getAllRidersUseCase,
-    this.updateRiderStatusUseCase,
-    this.getUserDetailsUseCase,
+    this._adminLoginUseCase,
+    this._getAllUsersUseCase,
+    this._toggleBlockUserUseCase,
+    this._getAllRidersUseCase,
+    this._updateRiderStatusUseCase,
+    this._getUserDetailsUseCase,
   );
 
   readonly rideController = new RideController(
-    this.createRideUseCase,
-    this.getRidesUseCase,
-    this.getMyRidesUseCase,
+    this._createRideUseCase,
+    this._getRidesUseCase,
+    this._getMyRidesUseCase,
   );
 
-  // ── Singleton accessor ──────────────────────────────────────────────────────
+  // Singleton accessor
   static getInstance(): AppContainer {
     if (!AppContainer._instance) {
       AppContainer._instance = new AppContainer();

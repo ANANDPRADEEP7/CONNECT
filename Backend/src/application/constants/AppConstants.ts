@@ -1,8 +1,3 @@
-/**
- * AppConstants – Application Layer
- * Centralised error messages and application-level string constants.
- * Controllers and use-cases should reference these instead of inline strings.
- */
 export const AppConstants = {
   errors: {
     // Auth

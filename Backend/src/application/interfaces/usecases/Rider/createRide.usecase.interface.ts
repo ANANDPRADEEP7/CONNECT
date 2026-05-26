@@ -8,24 +8,11 @@ export interface CreateRideRequest {
   description?: string;
 }
 
-export interface RideData {
-  id: string;
-  riderId: string;
-  from: string;
-  to: string;
-  date: string;
-  time: string;
-  seats: number;
-  pricePerSeat: number;
-  description?: string;
-  status: "active" | "completed" | "cancelled";
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+import { RideDTO } from "../../../../application/mappers/Ride/RideMapper";
 
 export interface CreateRideResponse {
   message: string;
-  ride: RideData;
+  ride: RideDTO;
 }
 
 export interface ICreateRideUseCase {

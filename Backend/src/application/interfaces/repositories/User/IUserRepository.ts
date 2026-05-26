@@ -11,6 +11,16 @@ export interface IUserRepository extends IBaseRepository<User> {
   getOtp(email: string): Promise<OtpData | null>;
   deleteOtp(email: string): Promise<void>;
   findAll(): Promise<User[]>;
-  findPaginatedUsers(page: number, limit: number): Promise<{ data: User[]; total: number }>;
-  findPaginatedRiders(page: number, limit: number): Promise<{ data: User[]; total: number }>;
+  findPaginatedUsers(
+    page: number,
+    limit: number,
+    search?: string,
+    filter?: string,
+  ): Promise<{ data: User[]; total: number }>;
+  findPaginatedRiders(
+    page: number,
+    limit: number,
+    search?: string,
+    filter?: string,
+  ): Promise<{ data: User[]; total: number }>;
 }

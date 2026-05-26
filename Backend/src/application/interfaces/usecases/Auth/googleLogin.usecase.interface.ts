@@ -1,6 +1,7 @@
 interface GoogleLoginResponse {
   message: string;
   token: string;
+  refreshToken: string;
   user: GoogleUser;
 }
 

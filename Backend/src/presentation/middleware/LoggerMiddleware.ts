@@ -1,24 +1,11 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { LoggerContainer } from "../../infrastructure/DI/LoggerContainer";
-import { TokenPayload } from "../../domain/interfaces/ITokenService";
+import { AuthRequest } from "./AuthMiddleware";
 
-// Extend Request interface to include user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: TokenPayload;
-    }
-  }
-}
-
-/**
- * HTTP Request Logging Middleware - Presentation layer
- * Logs all incoming HTTP requests
- */
 const loggerContainer = LoggerContainer.getInstance();
 const loggerService = loggerContainer.getLoggerService();
 
-export const requestLogger = (req: Request, res: Response, next: NextFunction): void => {
+export const requestLogger = (req: AuthRequest, res: Response, next: NextFunction): void => {
   const startTime = Date.now();
 
   // Log incoming request
@@ -26,20 +13,21 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
 
   // Override res.end to log response
   const originalEnd = res.end;
-  res.end = function (this: Response, chunk?: any, encoding?: any, cb?: any): Response {
+  res.end = function (this: Response, ...args: Parameters<typeof res.end>): Response {
     const duration = Date.now() - startTime;
     loggerService.logApiResponse(req.method, req.route?.path || req.path, res.statusCode, duration);
-    return originalEnd.call(this, chunk, encoding, cb);
-  } as any;
+    return originalEnd.call(this, ...(args as Parameters<typeof res.end>));
+  } as typeof res.end;
 
   next();
 };
 
-/**
- * Error Logging Middleware - Presentation layer
- * Logs all errors that occur in the application
- */
-export const errorLogger = (err: Error, req: Request, res: Response, next: NextFunction): void => {
+export const errorLogger = (
+  err: Error,
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): void => {
   loggerService.logError(err, `${req.method} ${req.route?.path || req.path}`, {
     userAgent: req.get("User-Agent"),
     ip: req.ip,

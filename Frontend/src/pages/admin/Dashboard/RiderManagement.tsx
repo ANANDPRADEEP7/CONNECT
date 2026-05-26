@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, XCircle, Clock, Eye } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Eye, AlertCircle, Search, Filter } from "lucide-react";
 import { toast } from "react-toastify";
 import { adminApi } from "../../../Endpoints/Api/Admin/adminApi";
 import {
@@ -24,6 +24,7 @@ interface Rider {
   vehicleImage?: string;
   pucImage?: string;
   rcImage?: string;
+  rejectionReason?: string | null;
 }
 
 // ─── Status Config ────────────────────────────────────────────────────────────
@@ -67,7 +68,41 @@ const RiderDocumentsModal = ({ rider, onClose }: RiderModalProps) => {
           </button>
         </div>
 
+        {/* Rejection Reason Banner */}
+        {rider.status === "rejected" && rider.rejectionReason && (
+          <div className="flex items-start gap-3 bg-destructive/10 border border-destructive/30 rounded-xl p-4">
+            <AlertCircle size={16} className="text-destructive mt-0.5 shrink-0" />
+            <div>
+              <p className="text-xs font-bold text-destructive uppercase tracking-widest mb-1">
+                Rejection Reason
+              </p>
+              <p className="text-sm text-foreground">{rider.rejectionReason}</p>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Rider Details */}
+          <div className="space-y-4 col-span-full">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              Rider Details
+            </p>
+            <div className="bg-accent/30 p-4 rounded-xl grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Name</p>
+                <p className="text-sm font-semibold text-foreground">{rider.name}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Email</p>
+                <p className="text-sm font-medium text-foreground">{rider.email}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Phone Number</p>
+                <p className="text-sm font-medium text-foreground">{rider.phone || "Not provided"}</p>
+              </div>
+            </div>
+          </div>
+
           {/* Bio */}
           <div className="space-y-4 col-span-full">
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
@@ -99,6 +134,7 @@ const RiderDocumentsModal = ({ rider, onClose }: RiderModalProps) => {
                     <img
                       src={doc.path}
                       alt={doc.label}
+                      key={doc.path} // Force re-render when image URL changes
                       className="w-full h-full object-cover cursor-pointer"
                       onClick={() => window.open(doc.path, "_blank")}
                     />
@@ -117,22 +153,81 @@ const RiderDocumentsModal = ({ rider, onClose }: RiderModalProps) => {
   );
 };
 
+// ─── Rejection Reason Modal ───────────────────────────────────────────────────
+
+interface RejectModalProps {
+  rider: Rider;
+  onConfirm: (reason: string) => void;
+  onCancel: () => void;
+}
+
+const RejectReasonModal = ({ rider, onConfirm, onCancel }: RejectModalProps) => {
+  const [reason, setReason] = useState("");
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="bg-card border border-border rounded-2xl w-full max-w-md p-6 space-y-4">
+        <h3 className="text-sm font-bold tracking-wider uppercase">Reject Rider Application</h3>
+        <p className="text-sm text-muted-foreground">
+          You are rejecting{" "}
+          <span className="font-semibold text-foreground">{rider.name}</span>'s application.
+          Please provide a reason.
+        </p>
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Enter rejection reason..."
+          rows={3}
+          className="w-full bg-accent/30 border border-border rounded-xl p-3 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-destructive"
+        />
+        <div className="flex gap-3 justify-end pt-1">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 rounded-full border border-border text-xs font-semibold hover:bg-accent transition-colors"
+          >
+            CANCEL
+          </button>
+          <button
+            onClick={() => onConfirm(reason.trim() || "No reason provided.")}
+            className="px-4 py-2 rounded-full bg-destructive text-destructive-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
+          >
+            CONFIRM REJECT
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── RiderManagement ──────────────────────────────────────────────────────────
 
 const RiderManagement = () => {
   const [riders, setRiders] = useState<Rider[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<RiderStatus | "all">("all");
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedRider, setSelectedRider] = useState<Rider | null>(null);
+  const [rejectingRider, setRejectingRider] = useState<Rider | null>(null);
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 10;
+
+  // Handle Debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1); // Reset to page 1 on search
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     const fetchRiders = async () => {
       setLoading(true);
       try {
-        const response = await adminApi.getRiders(page, limit);
+        const response = await adminApi.getRiders(page, limit, debouncedSearch, filter !== "all" ? filter : undefined);
         setRiders(response.data);
         setTotalPages(response.totalPages || 1);
       } catch (error: unknown) {
@@ -143,31 +238,44 @@ const RiderManagement = () => {
       }
     };
     fetchRiders();
-  }, [page]);
+  }, [page, debouncedSearch, filter]);
 
-  const updateStatus = async (id: string, status: RiderStatus) => {
+  const updateStatus = async (id: string, status: RiderStatus, rejectionReason?: string) => {
+    if (processingIds.has(id)) return;
+    setProcessingIds((prev) => new Set(prev).add(id));
+
     try {
       const backendStatus = status === "approved" ? "active" : "declined";
-      const result = await adminApi.updateRiderStatus(id, backendStatus);
+      const result = await adminApi.updateRiderStatus(id, backendStatus, rejectionReason);
       setRiders((prev) =>
         prev.map((r) => {
           if (r.id === id) {
             toast.success(result.message);
-            return { ...r, status };
+            return { ...r, status, rejectionReason: rejectionReason ?? r.rejectionReason };
           }
           return r;
         })
       );
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
-      toast.error(
-        err.response?.data?.message || "Failed to update rider status"
-      );
+      toast.error(err.response?.data?.message || "Failed to update rider status");
+    } finally {
+      setProcessingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
-  const filtered =
-    filter === "all" ? riders : riders.filter((r) => r.status === filter);
+  const handleRejectConfirm = (reason: string) => {
+    if (!rejectingRider) return;
+    const rider = rejectingRider;
+    setRejectingRider(null);
+    updateStatus(rider.id, "rejected", reason);
+  };
+
+  const filtered = riders;
 
   // ─── Column Definitions ──────────────────────────────────────────────────
 
@@ -210,6 +318,9 @@ const RiderManagement = () => {
 
   // ─── Row Actions ─────────────────────────────────────────────────────────
 
+  const isFinalized = (rider: Rider) =>
+    rider.status === "approved" || rider.status === "rejected";
+
   const rowActions = (rider: Rider) => (
     <>
       <button
@@ -219,22 +330,30 @@ const RiderManagement = () => {
         <Eye size={14} /> VIEW DETAILS
       </button>
 
-      {rider.status !== "approved" && (
-        <button
-          onClick={() => updateStatus(rider.id, "approved")}
-          className="px-4 py-2 rounded-full bg-green-600 text-white text-[10px] tracking-[0.15em] font-semibold hover:bg-green-700 transition-colors"
-        >
-          APPROVE
-        </button>
+      {!isFinalized(rider) && (
+        <>
+          <button
+            onClick={() => updateStatus(rider.id, "approved")}
+            disabled={processingIds.has(rider.id)}
+            className="px-4 py-2 rounded-full bg-green-600 text-white text-[10px] tracking-[0.15em] font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            APPROVE
+          </button>
+
+          <button
+            onClick={() => setRejectingRider(rider)}
+            disabled={processingIds.has(rider.id)}
+            className="px-4 py-2 rounded-full border border-destructive text-destructive text-[10px] tracking-[0.15em] font-semibold hover:bg-destructive hover:text-destructive-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            REJECT
+          </button>
+        </>
       )}
 
-      {rider.status !== "rejected" && (
-        <button
-          onClick={() => updateStatus(rider.id, "rejected")}
-          className="px-4 py-2 rounded-full border border-destructive text-destructive text-[10px] tracking-[0.15em] font-semibold hover:bg-destructive hover:text-destructive-foreground transition-colors"
-        >
-          REJECT
-        </button>
+      {isFinalized(rider) && (
+        <span className="text-[10px] tracking-widest text-muted-foreground font-semibold uppercase">
+          {rider.status === "approved" ? "✓ Approved" : "✗ Rejected"}
+        </span>
       )}
     </>
   );
@@ -244,19 +363,35 @@ const RiderManagement = () => {
   return (
     <div className="space-y-6">
       <ManagementHeader title="RIDER MANAGEMENT">
-        {(["all", "pending", "approved", "rejected"] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-4 py-1.5 rounded-full text-[10px] tracking-[0.15em] font-semibold uppercase border transition-colors ${
-              filter === f
-                ? "bg-primary text-primary-foreground border-transparent"
-                : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
-            }`}
-          >
-            {f}
-          </button>
-        ))}
+        <div className="flex items-center gap-3">
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={14} />
+            <input
+              type="text"
+              placeholder="SEARCH RIDERS..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 pr-4 py-2.5 rounded-full bg-accent/30 border border-border focus:border-primary/50 focus:bg-accent/50 outline-none text-[10px] tracking-widest font-semibold w-48 sm:w-64 transition-all"
+            />
+          </div>
+          
+          <div className="relative group">
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={14} />
+            <select
+              value={filter}
+              onChange={(e) => {
+                setFilter(e.target.value as RiderStatus | "all");
+                setPage(1);
+              }}
+              className="pl-9 pr-8 py-2.5 rounded-full bg-accent/30 border border-border focus:border-primary/50 outline-none text-[10px] tracking-widest font-semibold appearance-none cursor-pointer hover:bg-accent/50 transition-all"
+            >
+              <option value="all">ALL RIDERS</option>
+              <option value="pending">PENDING</option>
+              <option value="approved">APPROVED</option>
+              <option value="rejected">REJECTED</option>
+            </select>
+          </div>
+        </div>
       </ManagementHeader>
 
       <DataTable
@@ -296,6 +431,14 @@ const RiderManagement = () => {
         <RiderDocumentsModal
           rider={selectedRider}
           onClose={() => setSelectedRider(null)}
+        />
+      )}
+
+      {rejectingRider && (
+        <RejectReasonModal
+          rider={rejectingRider}
+          onConfirm={handleRejectConfirm}
+          onCancel={() => setRejectingRider(null)}
         />
       )}
     </div>

@@ -1,9 +1,15 @@
+import { RiderStatus } from "../../../../domain/enums/UserRole.enum";
+
 export interface UpdateRiderStatusResponse {
   message: string;
-  isRiderActive: "active" | "declined";
+  isRiderActive: RiderStatus.ACTIVE | RiderStatus.DECLINED;
   riderId: string;
 }
 
 export interface IUpdateRiderStatusUseCase {
-  execute(userId: string, status: "active" | "declined"): Promise<UpdateRiderStatusResponse>;
+  execute(
+    userId: string,
+    status: RiderStatus.ACTIVE | RiderStatus.DECLINED,
+    rejectionReason?: string,
+  ): Promise<UpdateRiderStatusResponse>;
 }

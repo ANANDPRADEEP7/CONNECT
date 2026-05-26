@@ -2,34 +2,29 @@ import { EmailService } from "../../application/services/EmailService";
 import { IEmailService } from "../../domain/interfaces/IEmailService";
 import { NodemailerService } from "../services/NodemailerService";
 
-/**
- * Dependency Injection Container for Email
- * Manages the lifecycle and dependencies of email service instances
- * Following Dependency Inversion Principle
- */
 export class EmailContainer {
-  private static instance: EmailContainer;
-  private emailService: EmailService;
+  private static _instance: EmailContainer;
+  private _emailService: EmailService;
 
   private constructor() {
     // Infrastructure dependency
     const nodemailerService: IEmailService = new NodemailerService();
 
     // Application service with injected dependency
-    this.emailService = new EmailService(nodemailerService);
+    this._emailService = new EmailService(nodemailerService);
   }
 
   public static getInstance(): EmailContainer {
-    if (!EmailContainer.instance) {
-      EmailContainer.instance = new EmailContainer();
+    if (!EmailContainer._instance) {
+      EmailContainer._instance = new EmailContainer();
     }
-    return EmailContainer.instance;
+    return EmailContainer._instance;
   }
 
   /**
    * Get the email service instance
    */
   public getEmailService(): EmailService {
-    return this.emailService;
+    return this._emailService;
   }
 }

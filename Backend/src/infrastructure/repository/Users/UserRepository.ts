@@ -1,6 +1,7 @@
 import { IUserRepository } from "../../../application/interfaces/repositories/User/IUserRepository";
 import { OtpData } from "../../../domain/entities/User/Otp.entities";
 import { User } from "../../../domain/entities/User/user.entities";
+import { UserRole, RiderStatus } from "../../../domain/enums/UserRole.enum";
 import { OtpModel } from "../../schema/otpSchema";
 import { UserModel } from "../../schema/userSchema";
 import { BaseRepository } from "../BaseRepository/BaseRepository";
@@ -26,7 +27,6 @@ export class UserRepository extends BaseRepository<User> implements IUserReposit
   }
 
   async storeOtp(data: Partial<OtpData>): Promise<void> {
-    console.log("dataaaaaaa", data);
     const Otp = new OtpModel(data);
     await Otp.save();
   }
@@ -57,17 +57,59 @@ export class UserRepository extends BaseRepository<User> implements IUserReposit
     return users.map((user) => user.toObject());
   }
 
-  async findPaginatedUsers(page: number, limit: number): Promise<{ data: User[]; total: number }> {
+  async findPaginatedUsers(
+    page: number,
+    limit: number,
+    search?: string,
+    filter?: string,
+  ): Promise<{ data: User[]; total: number }> {
     const skip = (page - 1) * limit;
-    const query = { role: { $ne: "admin" } };
+    const query: Record<string, unknown> = { role: { $ne: UserRole.ADMIN } };
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (filter === "blocked") {
+      query.isBlocked = true;
+    } else if (filter === "unblocked") {
+      query.isBlocked = false;
+    }
+
     const total = await UserModel.countDocuments(query);
     const users = await UserModel.find(query).skip(skip).limit(limit).exec();
     return { data: users.map((user) => user.toObject()), total };
   }
 
-  async findPaginatedRiders(page: number, limit: number): Promise<{ data: User[]; total: number }> {
+  async findPaginatedRiders(
+    page: number,
+    limit: number,
+    search?: string,
+    filter?: string,
+  ): Promise<{ data: User[]; total: number }> {
     const skip = (page - 1) * limit;
-    const query = { isRiderActive: { $in: ["active", "pending", "declined"] } };
+    const query: Record<string, unknown> = {
+      isRiderActive: { $in: [RiderStatus.ACTIVE, RiderStatus.PENDING, RiderStatus.DECLINED] },
+    };
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (filter === "approved") {
+      query.isRiderActive = RiderStatus.ACTIVE;
+    } else if (filter === "rejected") {
+      query.isRiderActive = RiderStatus.DECLINED;
+    } else if (filter === "pending") {
+      query.isRiderActive = RiderStatus.PENDING;
+    }
+
     const total = await UserModel.countDocuments(query);
     const users = await UserModel.find(query).skip(skip).limit(limit).exec();
     return { data: users.map((user) => user.toObject()), total };

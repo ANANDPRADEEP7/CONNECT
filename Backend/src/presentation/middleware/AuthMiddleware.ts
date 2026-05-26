@@ -1,6 +1,7 @@
 import { ITokenService, TokenPayload } from "../../domain/interfaces/ITokenService";
 import { HttpStatus } from "../../domain/enums/HttpStatus.enum";
 import { ResponseMessage } from "../../domain/enums/ResponseMessage.enum";
+import { UserRole } from "../../domain/enums/UserRole.enum";
 import { NextFunction, Request, Response } from "express";
 
 export interface AuthRequest extends Request {
@@ -40,7 +41,7 @@ export const authenticateAdmin = (tokenService: ITokenService) => {
       return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Token is not valid" });
     }
 
-    if (decoded.role !== "admin") {
+    if (decoded.role !== UserRole.ADMIN) {
       return res.status(HttpStatus.FORBIDDEN).json({ message: ResponseMessage.NOT_AUTHORIZED });
     }
 

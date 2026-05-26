@@ -15,14 +15,10 @@ export interface GoogleUserInfo {
 }
 
 export class GoogleAuthService {
-  private readonly USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
+  private readonly _USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
 
-  /**
-   * Exchange a Google access_token for verified user info.
-   * Throws if the token is invalid or the request fails.
-   */
   async verifyAccessToken(accessToken: string): Promise<GoogleUserInfo> {
-    const response = await fetch(this.USERINFO_URL, {
+    const response = await fetch(this._USERINFO_URL, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

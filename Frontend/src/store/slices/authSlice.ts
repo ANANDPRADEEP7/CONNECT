@@ -15,6 +15,7 @@ export interface AuthUser {
   vehicleImage?: string;
   pucImage?: string;
   rcImage?: string;
+  rejectionReason?: string | null;
 }
 
 interface AuthState {

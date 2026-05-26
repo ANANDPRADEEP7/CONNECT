@@ -1,24 +1,12 @@
 import { ResponseMessage } from "../../../../domain/enums/ResponseMessage.enum";
 
+import { AuthUserDTO } from "../../../../application/mappers/Auth/AuthUserMapper";
+
 export interface LoginResponse {
   message: ResponseMessage.LOGIN_SUCCESS;
   token: string;
-  user: User;
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  isRiderActive: string | undefined;
-  isBlocked: boolean;
-  phonenumber: string;
-  bio: string | undefined;
-  govId: string | undefined;
-  vehicleImage: string | undefined;
-  pucImage: string | undefined;
-  rcImage: string | undefined;
+  refreshToken: string;
+  user: AuthUserDTO;
 }
 
 export interface ILoginusecase {

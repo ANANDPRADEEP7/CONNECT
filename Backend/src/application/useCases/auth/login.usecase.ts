@@ -6,56 +6,44 @@ import {
   ILoginusecase,
   LoginResponse,
 } from "../../interfaces/usecases/Auth/login.usecase.interface";
+import { AuthUserMapper } from "../../mappers/Auth/AuthUserMapper";
 
 export class LoginUseCase implements ILoginusecase {
   constructor(
-    private userRepository: IUserRepository,
-    private tokenService: ITokenService,
+    private _userRepository: IUserRepository,
+    private _tokenService: ITokenService,
   ) {}
 
   async execute(email: string, password: string): Promise<LoginResponse> {
-    // 1. Find user in MongoDB
-    const user = await this.userRepository.findByEmailFromDB(email);
+    const user = await this._userRepository.findByEmailFromDB(email);
     if (!user) {
       throw new Error(ResponseMessage.USER_NOT_FOUND);
     }
 
-    // 2. Check if blocked
     if (user.isBlocked) {
       throw new Error(ResponseMessage.USER_BLOCKED);
     }
 
-    // 3. Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       throw new Error(ResponseMessage.INCORRECT_PASSWORD);
     }
 
-    // 4. Sign JWT using service
-    const token = this.tokenService.generateAuthToken({
+    const tokenPayload = {
       id: user._id,
       email: user.email,
       role: user.role,
       name: user.name,
-    });
+    };
+
+    const token = this._tokenService.generateAuthToken(tokenPayload);
+    const refreshToken = this._tokenService.generateRefreshToken(tokenPayload);
 
     return {
       message: ResponseMessage.LOGIN_SUCCESS,
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        isRiderActive: user.isRiderActive,
-        isBlocked: user.isBlocked,
-        phonenumber: user.phonenumber,
-        bio: user.bio,
-        govId: user.govId,
-        vehicleImage: user.vehicleImage,
-        pucImage: user.pucImage,
-        rcImage: user.rcImage,
-      },
+      refreshToken,
+      user: AuthUserMapper.toAuthUserDTO(user),
     };
   }
 }

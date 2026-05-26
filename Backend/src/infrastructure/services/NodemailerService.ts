@@ -1,15 +1,11 @@
 import nodemailer, { Transporter } from "nodemailer";
 import { IEmailService } from "../../domain/interfaces/IEmailService";
 
-/**
- * Nodemailer Service - Infrastructure layer
- * Concrete implementation of IEmailService using Nodemailer
- */
 export class NodemailerService implements IEmailService {
-  private transporter: Transporter;
+  private _transporter: Transporter;
 
   constructor() {
-    this.transporter = nodemailer.createTransport({
+    this._transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || "smtp.gmail.com",
       port: Number(process.env.SMTP_PORT) || 587,
       secure: false,
@@ -28,6 +24,6 @@ export class NodemailerService implements IEmailService {
       html,
     };
 
-    await this.transporter.sendMail(mailOptions);
+    await this._transporter.sendMail(mailOptions);
   }
 }

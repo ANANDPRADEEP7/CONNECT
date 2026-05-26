@@ -70,7 +70,7 @@ const MapSelectionModal = ({
           });
           
           geocoder.addTo(geocoderContainerRef.current);
-          geocoder.on("result", (e: any) => {
+          geocoder.on("result", (e: { result: { place_name: string; center: [number, number] } }) => {
             const coords = e.result.center;
             const address = e.result.place_name;
             

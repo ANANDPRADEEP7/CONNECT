@@ -75,9 +75,10 @@ const OtpForm = ({ otpLength = 5 }: OtpFormProps) => {
       toast.success(response.message);
 
       navigate("/user/login");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
       const message =
-        error.response?.data?.message || "Verification failed";
+        err.response?.data?.message || "Verification failed";
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -93,9 +94,10 @@ const OtpForm = ({ otpLength = 5 }: OtpFormProps) => {
       setTimer(30);
       setOtp(Array(otpLength).fill(""));
       inputRefs.current[0]?.focus();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
       toast.error(
-        error.response?.data?.message || "Failed to resend OTP"
+        err.response?.data?.message || "Failed to resend OTP"
       );
     }
   };

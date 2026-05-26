@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Model, HydratedDocument } from "mongoose";
+import mongoose, { Schema, Model, HydratedDocument } from "mongoose";
 import { OtpData } from "../../domain/entities/User/Otp.entities";
 
 export type OtpDocument = HydratedDocument<OtpData>;

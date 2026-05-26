@@ -27,8 +27,9 @@ const AdminLoginForm = () => {
       localStorage.setItem("adminToken", response.token);
       toast.success(response.message || "Admin logged in successfully!");
       navigate("/admin/dashboard");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Login failed. Please try again.");
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Login failed. Please try again.");
     }
   };
 
