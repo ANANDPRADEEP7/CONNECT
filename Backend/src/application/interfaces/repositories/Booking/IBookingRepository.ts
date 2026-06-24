@@ -1,4 +1,4 @@
-import { Booking } from "../../../domain/entities/Booking/booking.entities";
+import { Booking } from "../../../../domain/entities/Booking/booking.entities";
 
 export interface IBookingRepository {
   create(booking: Partial<Booking>): Promise<Booking>;

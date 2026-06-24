@@ -28,15 +28,15 @@ const BookSeatModal: React.FC<BookSeatModalProps> = ({ isOpen, onClose, ride }) 
         seatsToBook,
       });
 
-      if (res.data) {
-        if (res.data.status === "confirmed") {
-          toast.success("Booking confirmed successfully!");
-        } else {
-          toast.info("Booking request sent to driver for approval.");
-        }
-        onClose();
-        navigate("/my-bookings");
+      // The Axios interceptor spreads object responses directly onto the return value.
+      // So res.status is the booking status, not an HTTP status code.
+      if (res.status === "confirmed") {
+        toast.success("Booking confirmed! You're all set.");
+      } else {
+        toast.info("Booking request sent. Waiting for driver approval.");
       }
+      onClose();
+      navigate("/my-bookings");
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to book seats");
     } finally {

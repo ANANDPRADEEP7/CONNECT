@@ -18,16 +18,19 @@ export class UpdateBookingStatusUseCase {
 
     // Passengers can only cancel their own bookings
     if (status === "cancelled") {
-      if (booking.passengerId._id.toString() !== userId && booking.driverId._id.toString() !== userId) {
+      const passId = ((booking.passengerId as any)?._id ?? booking.passengerId).toString();
+      const drivId = ((booking.driverId as any)?._id ?? booking.driverId).toString();
+      if (passId !== userId && drivId !== userId) {
         throw new CustomError("Unauthorized to cancel this booking", HttpStatus.FORBIDDEN);
       }
       if (booking.status === "cancelled" || booking.status === "rejected") {
         throw new CustomError(`Booking is already ${booking.status}`, HttpStatus.BAD_REQUEST);
       }
-    } 
+    }
     // Drivers can approve (confirm) or reject bookings
     else if (status === "confirmed" || status === "rejected") {
-      if (booking.driverId._id.toString() !== userId) {
+      const drivId = ((booking.driverId as any)?._id ?? booking.driverId).toString();
+      if (drivId !== userId) {
         throw new CustomError("Only the driver can approve or reject this booking", HttpStatus.FORBIDDEN);
       }
       if (booking.status !== "pending") {
@@ -35,7 +38,8 @@ export class UpdateBookingStatusUseCase {
       }
 
       if (status === "confirmed") {
-        const ride = await this._rideRepository.findById(booking.rideId._id.toString());
+        const rideId = ((booking.rideId as any)?._id ?? booking.rideId).toString();
+        const ride = await this._rideRepository.findById(rideId);
         if (!ride) {
           throw new CustomError("Associated ride not found", HttpStatus.NOT_FOUND);
         }

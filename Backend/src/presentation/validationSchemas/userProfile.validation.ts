@@ -21,7 +21,7 @@ export function validateUpdateProfileBody(body: unknown): ValidationResult {
   return { valid: true };
 }
 
-// ── Personal Info Update ────────────────────────────────────────────────────
+
 
 export const updatePersonalInfoSchema = z.object({
   name: z
@@ -44,7 +44,7 @@ export function validateUpdatePersonalInfoBody(body: unknown): ValidationResult 
       message: result.error.issues.map((err: z.ZodIssue) => err.message).join(", "),
     };
   }
-  // Ensure at least one field is provided
+
   const parsed = body as Record<string, unknown>;
   if (!parsed.name && !parsed.email && !parsed.phonenumber) {
     return { valid: false, message: "At least one field (name, email, or phone) is required." };

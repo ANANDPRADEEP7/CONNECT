@@ -1,14 +1,11 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
+import { AuthRequest } from "../../middleware/AuthMiddleware";
 import { CreateBookingUseCase } from "../../../application/useCases/booking/createBooking.usecase";
 import { GetMyBookingsUseCase } from "../../../application/useCases/booking/getMyBookings.usecase";
 import { GetDriverBookingsUseCase } from "../../../application/useCases/booking/getDriverBookings.usecase";
 import { UpdateBookingStatusUseCase } from "../../../application/useCases/booking/updateBookingStatus.usecase";
 import { HttpStatus } from "../../../domain/enums/HttpStatus.enum";
 import { createApiResponse } from "../../utils/apiResponse";
-
-export interface AuthRequest extends Request {
-  user?: { id: string; role: string; isRiderActive?: string };
-}
 
 export class BookingController {
   constructor(
