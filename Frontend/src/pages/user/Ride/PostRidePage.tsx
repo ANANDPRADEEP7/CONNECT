@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { User, MapPin, Navigation } from "lucide-react";
+import type { Coordinate } from "../../../types/ride/ride.types";
 import { toast } from "react-toastify";
 import Navbar from "../../../components1/common/Navbar/Navbar";
 
@@ -22,13 +24,13 @@ mapboxgl.accessToken = MAPBOX_TOKEN;
 const postRideSchema = z.object({
   startingFrom: z.string().trim().min(2, "Starting location is required").max(200),
   destination: z.string().trim().min(2, "Destination is required").max(200),
-  passengers: z.coerce.number().min(1, "At least 1 passenger").max(10, "Maximum 10 passengers"),
+  passengers: z.number().min(1, "At least 1 passenger").max(10, "Maximum 10 passengers"),
 });
 
 type PostRideValues = z.infer<typeof postRideSchema>;
 
 // ─── Component ────────────────────────────────────────────────────────────────
-import { Component, ReactNode } from "react";
+import { Component, type ReactNode } from "react";
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: Error | null }> {
   constructor(props: { children: ReactNode }) {
@@ -47,6 +49,10 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
 }
 
 const PostRidePageContent = () => {
+  const navigate = useNavigate();
+  const [isPublished, setIsPublished] = useState(false);
+  const [publishedData, setPublishedData] = useState<PostRideValues | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -68,8 +74,8 @@ const PostRidePageContent = () => {
   const destGeocoderContainerRef = useRef<HTMLDivElement>(null);
 
   // ── State ───────────────────────────────────────────────────────────────────
-  const [originCoords, setOriginCoords] = useState<[number, number] | null>(null);
-  const [destCoords, setDestCoords] = useState<[number, number] | null>(null);
+  const [originCoords, setOriginCoords] = useState<Coordinate | null>(null);
+  const [destCoords, setDestCoords] = useState<Coordinate | null>(null);
   const [distance, setDistance] = useState("");
   const [duration, setDuration] = useState("");
   const [routeLoading, setRouteLoading] = useState(false);
@@ -161,7 +167,11 @@ const PostRidePageContent = () => {
       originGeocoder.addTo(originGeocoderContainerRef.current!);
       originGeocoder.on("result", (e: { result: { place_name: string; center: [number, number] } }) => {
         setValue("startingFrom", e.result.place_name, { shouldValidate: true });
-        setOriginCoords(e.result.center);
+        setOriginCoords({
+          name: e.result.place_name,
+          longitude: e.result.center[0],
+          latitude: e.result.center[1],
+        });
       });
       originGeocoder.on("clear", () => {
         setValue("startingFrom", "", { shouldValidate: true });
@@ -179,7 +189,11 @@ const PostRidePageContent = () => {
       destGeocoder.addTo(destGeocoderContainerRef.current!);
       destGeocoder.on("result", (e: { result: { place_name: string; center: [number, number] } }) => {
         setValue("destination", e.result.place_name, { shouldValidate: true });
-        setDestCoords(e.result.center);
+        setDestCoords({
+          name: e.result.place_name,
+          longitude: e.result.center[0],
+          latitude: e.result.center[1],
+        });
       });
       destGeocoder.on("clear", () => {
         setValue("destination", "", { shouldValidate: true });
@@ -203,7 +217,7 @@ const PostRidePageContent = () => {
     const fetchRoute = async () => {
       setRouteLoading(true);
       try {
-        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${originCoords[0]},${originCoords[1]};${destCoords[0]},${destCoords[1]}?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`;
+        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${originCoords.longitude},${originCoords.latitude};${destCoords.longitude},${destCoords.latitude}?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`;
         const res = await fetch(url);
         const data = await res.json();
 
@@ -239,8 +253,8 @@ const PostRidePageContent = () => {
         mapRef.current!.fitBounds(bounds, { padding: { top: 60, bottom: 60, left: 60, right: 60 }, duration: 1200 });
 
         // Add / move markers
-        addMarker(originCoords, "origin");
-        addMarker(destCoords, "dest");
+        addMarker([originCoords.longitude, originCoords.latitude], "origin");
+        addMarker([destCoords.longitude, destCoords.latitude], "dest");
       } catch (err) {
         console.error("Route fetch failed:", err);
         toast.error("Failed to fetch route. Please try again.");
@@ -288,6 +302,22 @@ const PostRidePageContent = () => {
     toast.success(
       `🚗 Ride Published!\n${data.startingFrom} → ${data.destination}\n${data.passengers} passenger(s)${distance ? ` · ${distance}` : ""}${duration ? ` · ${duration}` : ""}`
     );
+    setPublishedData(data);
+    setIsPublished(true);
+  };
+
+  const handleContinue = () => {
+    navigate("/add-stopover", {
+      state: {
+        startingFrom: publishedData?.startingFrom || "",
+        destination: publishedData?.destination || "",
+        passengers: publishedData?.passengers || 1,
+        distance,
+        duration,
+        originCoords, // Coordinate object { name, latitude, longitude }
+        destCoords,   // Coordinate object { name, latitude, longitude }
+      },
+    });
   };
 
   // ── Render ───────────────────────────────────────────────────────────────────
@@ -362,7 +392,7 @@ const PostRidePageContent = () => {
                   <User size={16} className="text-primary" />
                 </div>
                 <input
-                  {...register("passengers")}
+                  {...register("passengers", { valueAsNumber: true })}
                   type="number"
                   min={1}
                   max={10}
@@ -411,14 +441,24 @@ const PostRidePageContent = () => {
             </div>
           )}
 
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-full bg-primary text-primary-foreground text-sm tracking-widest uppercase font-bold py-4 mt-4 hover:brightness-110 disabled:opacity-50 transition-all shadow-lg hover:shadow-primary/20"
-          >
-            {isSubmitting ? "PUBLISHING..." : "PUBLISH RIDE"}
-          </button>
+          {/* Submit / Continue */}
+          {isPublished ? (
+            <button
+              type="button"
+              onClick={handleContinue}
+              className="w-full rounded-full bg-green-600 text-white text-sm tracking-widest uppercase font-bold py-4 mt-4 hover:bg-green-700 transition-all shadow-lg hover:shadow-green-500/20"
+            >
+              CONTINUE
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-full bg-primary text-primary-foreground text-sm tracking-widest uppercase font-bold py-4 mt-4 hover:brightness-110 disabled:opacity-50 transition-all shadow-lg hover:shadow-primary/20"
+            >
+              {isSubmitting ? "PUBLISHING..." : "PUBLISH RIDE"}
+            </button>
+          )}
         </form>
       </div>
 

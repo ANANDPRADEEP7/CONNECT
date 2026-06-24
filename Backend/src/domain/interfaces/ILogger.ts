@@ -1,7 +1,3 @@
-/**
- * Logger interface - Domain layer abstraction
- * Defines the contract for logging operations
- */
 export interface ILogger {
   info(message: string, meta?: Record<string, unknown>): void;
   error(message: string, meta?: Record<string, unknown>): void;

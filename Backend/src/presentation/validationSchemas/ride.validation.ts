@@ -1,9 +1,16 @@
 import { z } from "zod";
 import { ValidationResult } from "./auth.validation";
 
+/** Reusable Zod schema for a Coordinate object */
+const coordinateSchema = z.object({
+  name: z.string().min(1, "Location name is required"),
+  latitude: z.number({ message: "Latitude must be a number" }),
+  longitude: z.number({ message: "Longitude must be a number" }),
+});
+
 export const createRideSchema = z.object({
-  from: z.string().min(1, "Pickup location is required"),
-  to: z.string().min(1, "Drop-off location is required"),
+  from: coordinateSchema,
+  to: coordinateSchema,
   date: z.string().min(1, "Date is required"),
   time: z.string().min(1, "Time is required"),
   seats: z
@@ -15,6 +22,18 @@ export const createRideSchema = z.object({
     .transform(Number)
     .refine((val) => val > 0, "Price must be greater than 0"),
   description: z.string().optional(),
+  vehicleId: z.string().optional(),
+  stopovers: z
+    .array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        coords: coordinateSchema,
+      }),
+    )
+    .optional(),
+  distance: z.string().optional(),
+  duration: z.string().optional(),
 });
 
 export function validateCreateRideBody(body: unknown): ValidationResult {

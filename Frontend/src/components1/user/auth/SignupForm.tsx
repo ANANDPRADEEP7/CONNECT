@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { signupSchema, type SignupFormData } from "../../../validator/user/signup.validator";
 import { useNavigate, Link } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useAppDispatch } from "../../../store/hooks";
 import { setUser } from "../../../store/slices/authSlice";
 
@@ -25,7 +25,7 @@ const SignupForm = () => {
 
   const onSubmit = async (data: SignupFormData) => {
     try {
-      const response = await userApi.Register(data);
+      const response = await userApi.register(data);
       toast.success(response.message);
       navigate("/user/verifyOtp", { state: { email: data.email } });
     } catch (error: unknown) {
@@ -35,12 +35,12 @@ const SignupForm = () => {
   };
 
   const handleGoogleSignup = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
+    flow: "implicit",
+    onSuccess: async (tokenResponse: { access_token: string }) => {
       setGoogleLoading(true);
       try {
         const result = await userApi.googleLogin(tokenResponse.access_token);
         dispatch(setUser(result.user));
-        localStorage.setItem("token", result.token);
         toast.success(result.message || "Signed up with Google successfully!");
         navigate("/home");
       } catch (error: unknown) {
@@ -50,7 +50,8 @@ const SignupForm = () => {
         setGoogleLoading(false);
       }
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Google signup error:", error);
       toast.error("Google sign-up was cancelled or failed.");
       setGoogleLoading(false);
     },
@@ -112,7 +113,7 @@ const SignupForm = () => {
       <button
         type="button"
         disabled={googleLoading}
-        onClick={() => handleGoogleSignup()}
+      onClick={() => handleGoogleSignup()}
         style={{
           display: "flex",
           alignItems: "center",

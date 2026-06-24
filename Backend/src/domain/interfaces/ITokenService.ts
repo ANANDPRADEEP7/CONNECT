@@ -1,7 +1,3 @@
-/**
- * Token Service interface - Domain layer abstraction
- * Defines the contract for generating and verifying reset tokens
- */
 export interface TokenPayload {
   id: string;
   email: string;

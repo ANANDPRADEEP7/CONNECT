@@ -11,7 +11,9 @@ import ProfileInfo from "../../../components1/user/Profile/ProfileInfo";
 import { Button } from "../../../components/ui/button";
 import CollapsibleSection from "../../../components1/user/Profile/CollapsibleSection";
 import FileUploadField from "../../../components1/user/Profile/FileUploadField";
+import EditProfileModal from "../../../components1/user/Profile/EditProfileModal";
 import { userApi } from "../../../Endpoints/Api/user/userApi";
+import VehicleManagement from "../../../components1/user/Profile/VehicleManagement";
 import { AxiosError } from "axios";
 
 // ─── Cloudinary Direct Upload Helper ─────────────────────────────────────────
@@ -81,18 +83,20 @@ const Profile = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [showVerification, setShowVerification] = useState(false);
-  const [currentUser, setCurrentUser] = useState({
-    _id: "",
-    name: "",
-    email: "",
-    firstName: "",
-    lastName: "",
+  const [showEditModal, setShowEditModal] = useState(false);
+  const user = useAppSelector((state) => state.auth.user);
+
+  const nameParts = user?.name ? user.name.split(" ") : [];
+  const profileDetails = {
+    _id: user?.id || "",
+    name: user?.name || "",
+    email: user?.email || "",
+    firstName: nameParts[0] || "",
+    lastName: nameParts.slice(1).join(" ") || "",
     dob: "Not Provided",
     avatarUrl: "",
     verified: true,
-  });
-
-  const user = useAppSelector((state) => state.auth.user);
+  };
 
   useEffect(() => {
     if (!user) {
@@ -100,18 +104,6 @@ const Profile = () => {
       navigate("/"); // Redirect to login if not available
       return;
     }
-
-    const nameParts = user.name.split(" ");
-    setCurrentUser({
-      _id: user.id,
-      name: user.name,
-      email: user.email,
-      firstName: nameParts[0] || "",
-      lastName: nameParts.slice(1).join(" ") || "",
-      dob: "Not Provided",
-      avatarUrl: "",
-      verified: true,
-    });
 
     if (user.isRiderActive === "declined") {
       toast.error("Your rider verification was rejected by admin.");
@@ -137,7 +129,7 @@ const Profile = () => {
   // Called when the form passes validation
   const onSubmit = async (data: ProfileFormData) => {
     try {
-      if (!currentUser._id) {
+      if (!profileDetails._id) {
         toast.error("User context lost, please login again.");
         return;
       }
@@ -179,8 +171,8 @@ const Profile = () => {
             : Promise.resolve(undefined),
         ]);
 
-      await userApi.UpdateProfile({
-        userId: currentUser._id,
+      await userApi.updateProfile({
+        userId: profileDetails._id,
         bio: data.bio,
         ...(govIdUrl && { govId: govIdUrl }),
         ...(vehicleImageUrl && { vehicleImage: vehicleImageUrl }),
@@ -226,21 +218,41 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background flex items-start justify-center py-10 px-4">
       <div className="w-full max-w-xl space-y-4">
-        {/* Profile Header */}
-        <ProfileHeader
-          name={currentUser.name}
-          avatarUrl={currentUser.avatarUrl}
-          verified={currentUser.verified}
-        />
+        {/* Profile Header – clicking the card opens the edit modal */}
+        <div
+          className="relative cursor-pointer"
+          onClick={() => setShowEditModal(true)}
+          title="Edit profile"
+        >
+          <ProfileHeader
+            name={profileDetails.name}
+            avatarUrl={profileDetails.avatarUrl}
+            verified={profileDetails.verified}
+          />
+          {/* Edit badge */}
+          <span className="absolute top-3 right-10 text-[10px] font-semibold tracking-widest uppercase text-blue-500 opacity-70 hover:opacity-100 transition-opacity select-none">
+            Edit
+          </span>
+        </div>
 
-        {/* Basic Info */}
-        <ProfileInfo
-          fields={[
-            { label: "First Name", value: currentUser.firstName },
-            { label: "Last Name", value: currentUser.lastName },
-            { label: "Date of Birth", value: currentUser.dob },
-          ]}
-        />
+        {/* Basic Info – tap to edit */}
+        <div
+          className="relative cursor-pointer"
+          onClick={() => setShowEditModal(true)}
+          title="Edit personal info"
+        >
+          <ProfileInfo
+            fields={[
+              { label: "First Name", value: profileDetails.firstName },
+              { label: "Last Name", value: profileDetails.lastName },
+              { label: "Email", value: profileDetails.email || "Not provided" },
+              { label: "Phone", value: user?.phonenumber || "Not provided" },
+            ]}
+          />
+          <span className="absolute top-3 right-4 text-[10px] font-semibold tracking-widest uppercase text-blue-500 opacity-60 hover:opacity-100 transition-opacity select-none">
+            Edit
+          </span>
+        </div>
 
         {/* Read-only Document View */}
         {!showVerification && (user?.govId || user?.vehicleImage || user?.pucImage || user?.rcImage) && (
@@ -309,11 +321,11 @@ const Profile = () => {
 
               <CollapsibleSection
                 title="Confirm Email"
-                subtitle={currentUser.email}
+                subtitle={profileDetails.email}
               >
                 <p className="text-xs text-muted-foreground">
                   A confirmation link will be sent to{" "}
-                  <span className="text-foreground">{currentUser.email}</span>
+                  <span className="text-foreground">{profileDetails.email}</span>
                 </p>
               </CollapsibleSection>
             </div>
@@ -376,7 +388,15 @@ const Profile = () => {
             </Button>
           </form>
         )}
+
+        {!showVerification && <VehicleManagement />}
       </div>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+      />
     </div>
   );
 };

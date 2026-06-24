@@ -9,6 +9,16 @@ export interface GetAllRidersResponse {
   vehicleImage?: string;
   pucImage?: string;
   rcImage?: string;
+  rejectionReason?: string | null;
+  vehicles?: {
+    id: string;
+    name: string;
+    color?: string;
+    capacity: number;
+    rcNumber?: string;
+    type?: string;
+    images?: string[];
+  }[];
 }
 
 export interface PaginatedRidersResponse {

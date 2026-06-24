@@ -1,5 +1,7 @@
 import { UserRole, RiderStatus } from "../../enums/UserRole.enum";
 
+export type AuthProvider = "local" | "google";
+
 export interface User {
   _id: string;
   name: string;
@@ -10,6 +12,7 @@ export interface User {
   isBlocked: boolean;
   isVerified?: boolean;
   isRiderActive?: RiderStatus;
+  authProvider?: AuthProvider;
   bio?: string;
   govId?: string;
   vehicleImage?: string;

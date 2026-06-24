@@ -16,6 +16,6 @@ export class GetRidesUseCase implements IGetRidesUseCase {
       status: "active",
     });
 
-    return RideMapper.toRideDTOList(rides);
+    return RideMapper.toRideDTOList(rides) as GetRidesResponse[];
   }
 }

@@ -1,4 +1,5 @@
 import { IUserRepository } from "../../interfaces/repositories/User/IUserRepository";
+import { IVehicleRepository } from "../../interfaces/repositories/Vehicle/IVehicleRepository";
 import {
   IGetAllRidersUseCase,
   PaginatedRidersResponse,
@@ -7,7 +8,10 @@ import {
 import { AdminRiderMapper } from "../../mappers/Admin/AdminRiderMapper";
 
 export class GetAllRidersUseCase implements IGetAllRidersUseCase {
-  constructor(private _userRepository: IUserRepository) {}
+  constructor(
+    private _userRepository: IUserRepository,
+    private _vehicleRepository: IVehicleRepository,
+  ) {}
 
   async execute(
     page: number = 1,
@@ -22,7 +26,11 @@ export class GetAllRidersUseCase implements IGetAllRidersUseCase {
       filter,
     );
 
-    const mappedRiders = AdminRiderMapper.toAdminRiderDTOList(users);
+    const mappedRiders = [];
+    for (const user of users) {
+      const vehicles = await this._vehicleRepository.findByRider(user._id.toString());
+      mappedRiders.push(AdminRiderMapper.toAdminRiderDTO(user, vehicles));
+    }
 
     return {
       data: mappedRiders,

@@ -13,8 +13,23 @@ router.post(RIDE_ROUTES.ROOT, (req: AuthRequest, res, next) =>
   rideController.createRide(req, res, next),
 ); // POST  /ride
 router.get(RIDE_ROUTES.ROOT, (req, res, next) => rideController.getAllRides(req, res, next)); // GET   /ride
+router.get(RIDE_ROUTES.SEARCH, (req: AuthRequest, res, next) =>
+  rideController.searchRides(req, res, next),
+); // GET   /ride/search
 router.get(RIDE_ROUTES.MY_RIDES, (req: AuthRequest, res, next) =>
   rideController.getMyRides(req, res, next),
 ); // GET   /ride/my
+router.get(RIDE_ROUTES.BY_ID, (req: AuthRequest, res, next) =>
+  rideController.getRideById(req, res, next),
+); // GET   /ride/:id
+router.patch(RIDE_ROUTES.BY_ID, (req: AuthRequest, res, next) =>
+  rideController.updateRide(req, res, next),
+); // PATCH /ride/:id
+router.patch(RIDE_ROUTES.CANCEL, (req: AuthRequest, res, next) =>
+  rideController.cancelRide(req, res, next),
+); // PATCH /ride/:id/cancel
+router.delete(RIDE_ROUTES.BY_ID, (req: AuthRequest, res, next) =>
+  rideController.deleteRide(req, res, next),
+); // DELETE /ride/:id
 
 export default router;

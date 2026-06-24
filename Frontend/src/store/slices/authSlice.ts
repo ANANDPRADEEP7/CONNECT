@@ -10,6 +10,7 @@ export interface AuthUser {
   isRiderActive?: "pending" | "active" | "declined" | "none";
   isBlocked?: boolean;
   phonenumber?: string;
+  authProvider?: "local" | "google";
   bio?: string;
   govId?: string;
   vehicleImage?: string;
@@ -37,18 +38,26 @@ export const checkAuthSession = createAsyncThunk(
   "auth/checkSession",
   async (_, { dispatch }) => {
     try {
-      // We check user and admin concurrently
-      const [userRes, adminRes] = await Promise.allSettled([
-        userApi.getMe(),
-        adminApi.getMe()
-      ]);
+      const isAdminRoute = window.location.pathname.startsWith("/admin");
 
-      if (userRes.status === "fulfilled" && userRes.value?.user) {
-        dispatch(setUser(userRes.value.user));
-      }
-
-      if (adminRes.status === "fulfilled" && adminRes.value?.admin) {
-        dispatch(setAdmin(adminRes.value.admin));
+      if (isAdminRoute) {
+        try {
+          const adminRes = await adminApi.getMe();
+          if (adminRes?.admin) {
+            dispatch(setAdmin(adminRes.admin));
+          }
+        } catch (error) {
+          // Ignore 401s or other errors on initial load
+        }
+      } else {
+        try {
+          const userRes = await userApi.getMe();
+          if (userRes?.user) {
+            dispatch(setUser(userRes.user));
+          }
+        } catch (error) {
+          // Ignore errors
+        }
       }
     } catch (error) {
       console.error("Failed to check auth session", error);
@@ -66,7 +75,6 @@ const authSlice = createSlice({
     },
     clearUser(state) {
       state.user = null;
-      localStorage.removeItem("token");
     },
 
     // ── Admin ─────────────────────────────────────────────
@@ -75,7 +83,6 @@ const authSlice = createSlice({
     },
     clearAdmin(state) {
       state.admin = null;
-      localStorage.removeItem("adminToken");
     },
 
     setAuthLoading(state, action: PayloadAction<boolean>) {

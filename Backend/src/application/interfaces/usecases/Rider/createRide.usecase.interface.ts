@@ -1,11 +1,17 @@
+import { Coordinate, Stopover } from "../../../../domain/entities/Ride/ride.entities";
+
 export interface CreateRideRequest {
-  from: string;
-  to: string;
+  from: Coordinate;
+  to: Coordinate;
   date: string;
   time: string;
   seats: number;
   pricePerSeat: number;
   description?: string;
+  vehicleId?: string;
+  stopovers?: Stopover[];
+  distance?: string;
+  duration?: string;
 }
 
 import { RideDTO } from "../../../../application/mappers/Ride/RideMapper";

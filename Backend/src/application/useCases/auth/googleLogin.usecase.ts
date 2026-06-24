@@ -31,6 +31,7 @@ export class GoogleLoginUsecase implements IGoogleLoginUsecase {
         role: UserRole.USER,
         isBlocked: false,
         isVerified: true,
+        authProvider: "google",
       });
     }
 

@@ -1,8 +1,8 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, {
   createContext,
   useContext,
   useState,
-  useEffect,
   type ReactNode,
 } from "react";
 import { userApi } from "../Endpoints/Api/user/userApi";
@@ -31,30 +31,33 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [admin, setAdmin] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Check localStorage for persisted user info on load
+  const [user, setUser] = useState<User | null>(() => {
     const storedUser = localStorage.getItem("user");
-    const storedAdmin = localStorage.getItem("admin");
-
-    try {
-      if (storedUser && storedUser !== "undefined") {
-        setUser(JSON.parse(storedUser));
+    if (storedUser && storedUser !== "undefined") {
+      try {
+        return JSON.parse(storedUser);
+      } catch (error) {
+        console.error("Failed to parse stored user data:", error);
+        localStorage.removeItem("user");
       }
-      if (storedAdmin && storedAdmin !== "undefined") {
-        setAdmin(JSON.parse(storedAdmin));
-      }
-    } catch (error) {
-      console.error("Failed to parse stored auth data:", error);
-      // Clear corrupt data
-      localStorage.removeItem("user");
-      localStorage.removeItem("admin");
     }
-    setIsLoading(false);
-  }, []);
+    return null;
+  });
+
+  const [admin, setAdmin] = useState<User | null>(() => {
+    const storedAdmin = localStorage.getItem("admin");
+    if (storedAdmin && storedAdmin !== "undefined") {
+      try {
+        return JSON.parse(storedAdmin);
+      } catch (error) {
+        console.error("Failed to parse stored admin data:", error);
+        localStorage.removeItem("admin");
+      }
+    }
+    return null;
+  });
+
+  const [isLoading] = useState(false);
 
   const login = (userData: User) => {
     if (!userData) return;
@@ -70,7 +73,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const logout = async () => {
     try {
-      await userApi.Logout();
+      await userApi.logout();
     } catch (error) {
       console.error("Logout failed on server:", error);
     }
@@ -81,7 +84,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const adminLogout = async () => {
     try {
-      await adminApi.Logout();
+      await adminApi.logout();
     } catch (error) {
       console.error("Admin logout failed on server:", error);
     }

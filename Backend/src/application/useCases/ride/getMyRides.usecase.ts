@@ -12,6 +12,6 @@ export class GetMyRidesUseCase implements IGetMyRidesUseCase {
   async execute(riderId: string): Promise<GetMyRidesResponse[]> {
     const rides = await this._rideRepository.findByRider(riderId);
 
-    return RideMapper.toRideDTOList(rides);
+    return RideMapper.toRideDTOList(rides) as GetMyRidesResponse[];
   }
 }

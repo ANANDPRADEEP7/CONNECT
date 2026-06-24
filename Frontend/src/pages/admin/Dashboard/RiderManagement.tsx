@@ -25,6 +25,16 @@ interface Rider {
   pucImage?: string;
   rcImage?: string;
   rejectionReason?: string | null;
+  vehicles?: {
+    id: string;
+    name: string;
+    model?: string;
+    color?: string;
+    capacity: number;
+    rcNumber?: string;
+    type?: string;
+    images?: string[];
+  }[];
 }
 
 // ─── Status Config ────────────────────────────────────────────────────────────
@@ -112,6 +122,65 @@ const RiderDocumentsModal = ({ rider, onClose }: RiderModalProps) => {
               {rider.bio || "No bio provided."}
             </p>
           </div>
+
+          {/* Vehicles */}
+          {rider.vehicles && rider.vehicles.length > 0 && (
+            <div className="space-y-4 col-span-full">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                Vehicles
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {rider.vehicles.map((vehicle) => (
+                  <div key={vehicle.id} className="bg-accent/30 border border-border p-4 rounded-xl space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-sm font-bold text-foreground">{vehicle.name}</p>
+                        {vehicle.model && <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{vehicle.model}</p>}
+                      </div>
+                      <span className="text-[10px] uppercase tracking-widest bg-primary/20 text-primary px-2 py-0.5 rounded">
+                        {vehicle.type || "Vehicle"}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <p className="text-muted-foreground uppercase tracking-wider text-[9px]">RC Number</p>
+                        <p className="font-semibold text-foreground">{vehicle.rcNumber || "N/A"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground uppercase tracking-wider text-[9px]">Capacity</p>
+                        <p className="font-semibold text-foreground">{vehicle.capacity} Seats</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground uppercase tracking-wider text-[9px]">Color</p>
+                        <p className="font-semibold text-foreground flex items-center gap-1">
+                          {vehicle.color && (
+                            <span 
+                              className="w-2.5 h-2.5 rounded-full border border-border inline-block" 
+                              style={{ backgroundColor: vehicle.color.toLowerCase() }} 
+                            />
+                          )}
+                          {vehicle.color || "N/A"}
+                        </p>
+                      </div>
+                    </div>
+                    {vehicle.images && vehicle.images.length > 0 && (
+                      <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                        {vehicle.images.map((img, idx) => (
+                          <img 
+                            key={idx} 
+                            src={img} 
+                            alt={`${vehicle.name} - ${idx + 1}`} 
+                            className="w-16 h-12 rounded object-cover cursor-pointer hover:opacity-80 transition-opacity border border-border"
+                            onClick={() => window.open(img, "_blank")}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Documents */}
           {docs.map((doc) => (

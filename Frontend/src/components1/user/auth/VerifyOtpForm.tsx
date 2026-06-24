@@ -9,7 +9,6 @@ interface OtpFormProps {
 
 const OtpForm = ({ otpLength = 5 }: OtpFormProps) => {
   const [otp, setOtp] = useState<string[]>(Array(otpLength).fill(""));
-  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // ✅ Timer state added
@@ -37,7 +36,6 @@ const OtpForm = ({ otpLength = 5 }: OtpFormProps) => {
     const newOtp = [...otp];
     newOtp[index] = value.slice(-1);
     setOtp(newOtp);
-    setError(null);
 
     if (value && index < otpLength - 1) {
       inputRefs.current[index + 1]?.focus();
@@ -71,7 +69,7 @@ const OtpForm = ({ otpLength = 5 }: OtpFormProps) => {
     try {
       setIsSubmitting(true);
 
-      const response = await userApi.VerifyOtp(otpValue, email);
+      const response = await userApi.verifyOtp(otpValue, email);
       toast.success(response.message);
 
       navigate("/user/login");
@@ -116,7 +114,7 @@ const OtpForm = ({ otpLength = 5 }: OtpFormProps) => {
         {otp.map((digit, i) => (
           <input
             key={i}
-            ref={(el) => (inputRefs.current[i] = el)}
+            ref={(el) => { inputRefs.current[i] = el; }}
             type="text"
             inputMode="numeric"
             maxLength={1}

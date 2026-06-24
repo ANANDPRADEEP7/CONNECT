@@ -20,7 +20,7 @@ const navItems = [
   { label: "USER MANAGEMENT", path: "/admin/users", icon: Users },
   { label: "RIDER DASHBOARD", path: "/admin/riders", icon: Bike },
   { label: "TRAVELLER DASHBOARD", path: "/admin/dashboard", icon: Navigation },
-  { label: "YOUR RIDES", path: "/admin/dashboard", icon: Navigation },
+  { label: "MANAGE RIDES", path: "/admin/rides", icon: Navigation },
   { label: "BOOKINGS", path: "/admin/dashboard", icon: CalendarCheck },
   { label: "REPORTS", path: "/admin/dashboard", icon: FileText },
   { label: "PAYMENTS & REFUND", path: "/admin/dashboard", icon: CreditCard },
@@ -32,7 +32,7 @@ const AdminSidebar = () => {
 
   const handleLogout = async () => {
     try {
-      await adminApi.Logout();
+      await adminApi.logout();
     } catch (error) {
       console.error("Admin logout failed on server:", error);
     }

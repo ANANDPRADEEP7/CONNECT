@@ -8,6 +8,7 @@ export interface AuthUserDTO {
   isRiderActive: string | undefined;
   isBlocked: boolean;
   phonenumber: string;
+  authProvider?: string;
   bio?: string;
   govId?: string;
   vehicleImage?: string;
@@ -26,6 +27,7 @@ export class AuthUserMapper {
       isRiderActive: user.isRiderActive,
       isBlocked: user.isBlocked,
       phonenumber: user.phonenumber || "",
+      authProvider: user.authProvider,
       bio: user.bio,
       govId: user.govId,
       vehicleImage: user.vehicleImage,

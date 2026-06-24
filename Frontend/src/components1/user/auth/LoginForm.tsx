@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { userApi } from "../../../Endpoints/Api/user/userApi";
 import { useNavigate, Link } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useAppDispatch } from "../../../store/hooks";
 import { setUser } from "../../../store/slices/authSlice";
 
@@ -25,9 +25,8 @@ const LoginForm = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await userApi.Login(data);
+      const response = await userApi.login(data);
       dispatch(setUser(response.user));
-      localStorage.setItem("token", response.token);
       toast.success(response.message || "Logged in successfully!");
       navigate("/home");
     } catch (error: unknown) {
@@ -37,12 +36,12 @@ const LoginForm = () => {
   };
 
   const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
+    flow: "implicit",
+    onSuccess: useCallback(async (tokenResponse: { access_token: string }) => {
       setGoogleLoading(true);
       try {
         const result = await userApi.googleLogin(tokenResponse.access_token);
         dispatch(setUser(result.user));
-        localStorage.setItem("token", result.token);
         toast.success(result.message || "Logged in with Google successfully!");
         navigate("/home");
       } catch (error: unknown) {
@@ -51,8 +50,10 @@ const LoginForm = () => {
       } finally {
         setGoogleLoading(false);
       }
-    },
-    onError: () => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dispatch, navigate]),
+    onError: (error) => {
+      console.error("Google login error:", error);
       toast.error("Google login was cancelled or failed.");
       setGoogleLoading(false);
     },
@@ -107,7 +108,7 @@ const LoginForm = () => {
       <button
         type="button"
         disabled={googleLoading}
-        onClick={() => handleGoogleLogin()}
+        onClick={() => { setGoogleLoading(true); handleGoogleLogin(); }}
         style={{
           display: "flex",
           alignItems: "center",

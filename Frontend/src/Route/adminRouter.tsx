@@ -6,6 +6,7 @@ const AdminLayout = lazy(() => import('../components1/admin/Dashboard/AdminLayou
 const Dashboard = lazy(() => import('../pages/admin/Dashboard/AdminDashboard'))
 const UserManagement = lazy(() => import('../pages/admin/Dashboard/UserManagement'))
 const RiderManagement = lazy(() => import('../pages/admin/Dashboard/RiderManagement'))
+const RidesManagement = lazy(() => import('../pages/admin/Dashboard/RidesManagement'))
 
 const AdminRoutes = [
   <Route key="admin-protected" element={<AdminProtectedRoute />}>
@@ -14,6 +15,7 @@ const AdminRoutes = [
       <Route path="dashboard" element={<Dashboard />} />
       <Route path="users" element={<UserManagement />} />
       <Route path="riders" element={<RiderManagement />} />
+      <Route path="rides" element={<RidesManagement />} />
     </Route>
   </Route>
 ];

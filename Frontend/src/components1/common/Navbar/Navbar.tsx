@@ -14,7 +14,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await userApi.Logout();
+      await userApi.logout();
     } catch (error) {
       console.error("Logout failed on server:", error);
     }
@@ -35,9 +35,12 @@ const Navbar = () => {
 
         {/* Right nav */}
         <div className="hidden md:flex items-center gap-3">
-          <button className="flex items-center gap-2 px-6 py-2.5 rounded-full border border-border text-sm tracking-widest uppercase text-foreground hover:bg-secondary transition-colors">
+          <Link
+            to="/search"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-full border border-border text-sm tracking-widest uppercase text-foreground hover:bg-secondary transition-colors"
+          >
             Search <Search size={16} />
-          </button>
+          </Link>
           <button className="flex items-center gap-1.5 px-4 py-2.5 text-sm tracking-widest uppercase text-foreground hover:text-muted-foreground transition-colors">
             About Us <ChevronDown size={14} />
           </button>
@@ -73,12 +76,35 @@ const Navbar = () => {
           >
             <LogOut size={22} />
           </button>
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="p-2 text-foreground hover:text-muted-foreground transition-colors"
-          >
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-2 text-foreground hover:text-muted-foreground transition-colors flex items-center justify-center"
+            >
+              {menuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+            
+            {/* Desktop Dropdown */}
+            {menuOpen && (
+              <div className="absolute top-full right-0 mt-4 w-56 bg-card border border-border/50 rounded-2xl shadow-2xl py-2 hidden md:block">
+                {user && (userRole === "rider" || user?.isRiderActive === "active") && (
+                  <Link to="/my-rides" className="block px-6 py-3 text-left text-[10px] font-black tracking-widest uppercase hover:bg-secondary/50 transition-colors">
+                    My Posted Rides
+                  </Link>
+                )}
+                <Link to="/my-bookings" className="block px-6 py-3 text-left text-[10px] font-black tracking-widest uppercase hover:bg-secondary/50 transition-colors">
+                  My Bookings
+                </Link>
+                <Link to="/profile" className="block px-6 py-3 text-left text-[10px] font-black tracking-widest uppercase hover:bg-secondary/50 transition-colors">
+                  Profile Settings
+                </Link>
+                <div className="w-full h-px bg-border/50 my-2" />
+                <button onClick={handleLogout} className="block w-full px-6 py-3 text-left text-[10px] font-black tracking-widest uppercase text-red-500 hover:bg-red-500/10 transition-colors">
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Mobile menu toggle */}
@@ -111,8 +137,12 @@ const Navbar = () => {
             </>
           )}
           <a href="#" className="block text-sm tracking-widest uppercase text-foreground">About Us</a>
+          <Link to="/my-bookings" className="block text-sm tracking-widest uppercase text-foreground">My Bookings</Link>
           {userRole === "rider" || user?.isRiderActive === "active" ? (
-            <Link to="/post-ride" className="block text-sm tracking-widest uppercase text-foreground">Post a Ride</Link>
+            <>
+              <Link to="/post-ride" className="block text-sm tracking-widest uppercase text-foreground">Post a Ride</Link>
+              <Link to="/my-rides" className="block text-sm tracking-widest uppercase text-foreground">My Posted Rides</Link>
+            </>
           ) : user?.isRiderActive === "pending" ? (
             <Link to="/Profile" className="block text-sm tracking-widest uppercase text-yellow-600">Pending Approval</Link>
           ) : user && (

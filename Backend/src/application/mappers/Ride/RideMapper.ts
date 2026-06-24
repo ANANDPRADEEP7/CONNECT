@@ -1,16 +1,21 @@
-import { Ride } from "../../../domain/entities/Ride/ride.entities";
+import { Coordinate, Ride, Stopover, RideCancellation } from "../../../domain/entities/Ride/ride.entities";
 
 export interface RideDTO {
   id: string;
   riderId: string;
-  from: string;
-  to: string;
+  from: Coordinate;
+  to: Coordinate;
   date: string;
   time: string;
   seats: number;
   pricePerSeat: number;
   description?: string;
-  status: "active" | "completed" | "cancelled";
+  vehicleId?: string;
+  status: "active" | "completed" | "cancelled" | "suspended";
+  stopovers?: Stopover[];
+  distance?: string;
+  duration?: string;
+  cancellation?: RideCancellation;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -27,7 +32,12 @@ export class RideMapper {
       seats: ride.seats,
       pricePerSeat: ride.pricePerSeat,
       description: ride.description,
-      status: ride.status as "active" | "completed" | "cancelled",
+      vehicleId: ride.vehicleId?.toString(),
+      status: ride.status as "active" | "completed" | "cancelled" | "suspended",
+      stopovers: ride.stopovers,
+      distance: ride.distance,
+      duration: ride.duration,
+      cancellation: ride.cancellation,
       createdAt: ride.createdAt,
       updatedAt: ride.updatedAt,
     };

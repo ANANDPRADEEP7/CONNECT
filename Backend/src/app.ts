@@ -6,6 +6,8 @@ import authRoutes from "./presentation/routes/Auth/auth.routes";
 import userRoutes from "./presentation/routes/User/user.routes";
 import adminRoutes from "./presentation/routes/Admin/admin.routes";
 import rideRoutes from "./presentation/routes/Ride/ride.routes";
+import vehicleRoutes from "./presentation/routes/Vehicle/vehicle.routes";
+import bookingRoutes from "./presentation/routes/Booking/booking.routes";
 import { LoggerContainer } from "./infrastructure/DI/LoggerContainer";
 import { errorLogger, requestLogger } from "./presentation/middleware/LoggerMiddleware";
 import { errorHandler } from "./presentation/middleware/ErrorHandler";
@@ -42,6 +44,8 @@ app.use("/user/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/admin", adminRoutes);
 app.use("/ride", rideRoutes);
+app.use("/vehicle", vehicleRoutes);
+app.use("/booking", bookingRoutes);
 
 // Error handling middleware
 app.use(errorLogger);

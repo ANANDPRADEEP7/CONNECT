@@ -22,7 +22,7 @@ const AdminLoginForm = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await adminApi.Login(data);
+      const response = await adminApi.login(data);
       dispatch(setAdmin(response.admin));
       localStorage.setItem("adminToken", response.token);
       toast.success(response.message || "Admin logged in successfully!");

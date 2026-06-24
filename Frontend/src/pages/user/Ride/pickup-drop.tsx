@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, MapPin, X } from "lucide-react";
+import { MapPin, X } from "lucide-react";
 import { toast } from "react-toastify";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -238,12 +238,14 @@ const LocationCard = ({
 };
 
 const PostRideForm = () => {
-  const handlePickup = (addr: string) => {
-    toast.success("Pick Up Set!");
+  const handlePickup = (addr: string, coords: [number, number]) => {
+    console.log("Pickup selected at:", coords);
+    toast.success(`Pick Up Set to ${addr}!`);
   };
 
-  const handleDropoff = (addr: string) => {
-    toast.success("Drop Off Set!");
+  const handleDropoff = (addr: string, coords: [number, number]) => {
+    console.log("Dropoff selected at:", coords);
+    toast.success(`Drop Off Set to ${addr}!`);
   };
 
   return (

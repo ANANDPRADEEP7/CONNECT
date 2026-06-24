@@ -14,6 +14,22 @@ export class CreateRideUseCase implements ICreateRideUseCase {
       throw new Error("Starting location and destination are required.");
     }
 
+    if (
+      typeof data.from.latitude !== "number" ||
+      typeof data.from.longitude !== "number" ||
+      !data.from.name
+    ) {
+      throw new Error("Starting location must be a valid coordinate with name, latitude, and longitude.");
+    }
+
+    if (
+      typeof data.to.latitude !== "number" ||
+      typeof data.to.longitude !== "number" ||
+      !data.to.name
+    ) {
+      throw new Error("Destination must be a valid coordinate with name, latitude, and longitude.");
+    }
+
     if (!data.date || !data.time) {
       throw new Error("Date and time are required.");
     }
@@ -28,13 +44,17 @@ export class CreateRideUseCase implements ICreateRideUseCase {
 
     const ride = await this._rideRepository.create({
       riderId,
-      from: data.from.trim(),
-      to: data.to.trim(),
+      from: data.from,
+      to: data.to,
       date: data.date,
       time: data.time,
       seats: data.seats,
       pricePerSeat: data.pricePerSeat,
       description: data.description?.trim(),
+      vehicleId: data.vehicleId,
+      stopovers: data.stopovers,
+      distance: data.distance,
+      duration: data.duration,
       status: "active",
     });
 

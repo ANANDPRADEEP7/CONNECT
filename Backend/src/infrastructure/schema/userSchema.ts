@@ -56,6 +56,11 @@ const UserSchema = new Schema(
       type: String,
       default: null,
     },
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
   },
   { timestamps: true },
 );

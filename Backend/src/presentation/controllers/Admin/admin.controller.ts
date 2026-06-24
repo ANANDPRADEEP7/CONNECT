@@ -8,6 +8,9 @@ import { IToggleBlockUserUseCase } from "../../../application/interfaces/usecase
 import { IGetAllRidersUseCase } from "../../../application/interfaces/usecases/Admin/getAllRiders.usecase.interface";
 import { IUpdateRiderStatusUseCase } from "../../../application/interfaces/usecases/Admin/updateRiderStatus.usecase.interface";
 import { IGetUserDetailsUseCase } from "../../../application/interfaces/usecases/Auth/getuserDetails.usecase.interface";
+import { IGetAdminRidesUseCase } from "../../../application/interfaces/usecases/Admin/getAdminRides.usecase.interface";
+import { IUpdateAdminRideStatusUseCase } from "../../../application/interfaces/usecases/Admin/updateAdminRideStatus.usecase.interface";
+import { IDeleteAdminRideUseCase } from "../../../application/interfaces/usecases/Admin/deleteAdminRide.usecase.interface";
 import { validateLoginBody } from "../../validationSchemas/auth.validation";
 import { validateUpdateRiderStatusBody } from "../../validationSchemas/admin.validation";
 import { UserRole } from "../../../domain/enums/UserRole.enum";
@@ -21,6 +24,9 @@ export class AdminController {
     private readonly _getAllRidersUseCase: IGetAllRidersUseCase,
     private readonly _updateRiderStatusUseCase: IUpdateRiderStatusUseCase,
     private readonly _getUserDetailsUseCase: IGetUserDetailsUseCase,
+    private readonly _getAdminRidesUseCase: IGetAdminRidesUseCase,
+    private readonly _updateAdminRideStatusUseCase: IUpdateAdminRideStatusUseCase,
+    private readonly _deleteAdminRideUseCase: IDeleteAdminRideUseCase,
   ) {}
 
   login = async (req: Request, res: Response, next: NextFunction) => {
@@ -148,6 +154,56 @@ export class AdminController {
       return res
         .status(HttpStatus.OK)
         .json(createApiResponse(HttpStatus.OK, result.message, result));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getAllRides = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const search = req.query.search as string | undefined;
+      const filter = req.query.filter as string | undefined;
+      const result = await this._getAdminRidesUseCase.execute(page, limit, search, filter);
+      return res
+        .status(HttpStatus.OK)
+        .json(createApiResponse(HttpStatus.OK, "Admin rides fetched successfully", result));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateRideStatus = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const { status, reason } = req.body;
+      if (!status || !["active", "completed", "cancelled", "suspended"].includes(status)) {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json(createApiResponse(HttpStatus.BAD_REQUEST, "Invalid status parameter"));
+      }
+      if (status === "cancelled" && (!reason || typeof reason !== 'string')) {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json(createApiResponse(HttpStatus.BAD_REQUEST, "Cancellation reason is required when status is cancelled"));
+      }
+      await this._updateAdminRideStatusUseCase.execute(id as string, status, reason);
+      return res
+        .status(HttpStatus.OK)
+        .json(createApiResponse(HttpStatus.OK, "Ride status updated successfully"));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteRide = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      await this._deleteAdminRideUseCase.execute(id as string);
+      return res
+        .status(HttpStatus.OK)
+        .json(createApiResponse(HttpStatus.OK, "Ride deleted successfully"));
     } catch (error) {
       next(error);
     }

@@ -18,5 +18,8 @@ router.get(ADMIN_ROUTES.USERS, catchAsync(adminController.getAllUsers));
 router.get(ADMIN_ROUTES.RIDERS, catchAsync(adminController.getAllRiders));
 router.patch(ADMIN_ROUTES.TOGGLE_BLOCK_USER, catchAsync(adminController.toggleBlockUser));
 router.patch(ADMIN_ROUTES.UPDATE_RIDER_STATUS, catchAsync(adminController.updateRiderStatus));
+router.get(ADMIN_ROUTES.GET_RIDES, catchAsync(adminController.getAllRides));
+router.patch(ADMIN_ROUTES.UPDATE_RIDE_STATUS, catchAsync(adminController.updateRideStatus));
+router.delete(ADMIN_ROUTES.DELETE_RIDE, catchAsync(adminController.deleteRide));
 
 export default router;

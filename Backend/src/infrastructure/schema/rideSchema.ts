@@ -3,6 +3,13 @@ import { Ride } from "../../domain/entities/Ride/ride.entities";
 
 export type RideDocument = HydratedDocument<Ride>;
 
+/** Sub-schema for a Coordinate object */
+const CoordinateSchema = {
+  name: { type: String, required: true },
+  latitude: { type: Number, required: true },
+  longitude: { type: Number, required: true },
+};
+
 const RideSchema = new Schema(
   {
     riderId: {
@@ -11,11 +18,11 @@ const RideSchema = new Schema(
       required: true,
     },
     from: {
-      type: String,
+      type: CoordinateSchema,
       required: true,
     },
     to: {
-      type: String,
+      type: CoordinateSchema,
       required: true,
     },
     date: {
@@ -40,10 +47,41 @@ const RideSchema = new Schema(
     description: {
       type: String,
     },
+    vehicleId: {
+      type: Schema.Types.ObjectId,
+      ref: "Vehicle",
+    },
     status: {
       type: String,
-      enum: ["active", "completed", "cancelled"],
+      enum: ["active", "completed", "cancelled", "suspended"],
       default: "active",
+    },
+    stopovers: {
+      type: [
+        {
+          id: { type: String, required: true },
+          name: { type: String, required: true },
+          coords: { type: CoordinateSchema, required: true },
+          price: { type: Number },
+        },
+      ],
+      default: [],
+    },
+    distance: {
+      type: String,
+    },
+    duration: {
+      type: String,
+    },
+    cancellation: {
+      cancelledBy: { type: String, enum: ["Driver", "Passenger", "Admin"] },
+      reason: { type: String },
+      timestamp: { type: Date }
+    },
+    bookingMode: {
+      type: String,
+      enum: ["instant", "review"],
+      default: "instant",
     },
   },
   { timestamps: true },

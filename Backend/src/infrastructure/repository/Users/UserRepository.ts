@@ -10,6 +10,7 @@ export class UserRepository extends BaseRepository<User> implements IUserReposit
   constructor() {
     super(UserModel);
   }
+
   async findByEmail(email: string): Promise<User | null> {
     const user = await UserModel.findOne({ email });
     return user ? user.toObject() : null;
